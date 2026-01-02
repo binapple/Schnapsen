@@ -154,10 +154,10 @@ public class SchnapsenBoard {
 
     /**
      * Player plays a card on the board, logic for who takes the trick if the played card is not the leading card
-     *
+     * <p>
      * If the playing card pile is empty or the talon was closed,
      * the following card has to have the same color of the leading card and one is obliged to take the trick if possible.
-     *
+     * <p>
      * Trick is scored and added to the tricks taken pile of the player in the end.
      *
      * @param playerId id of player playing the card
@@ -379,9 +379,9 @@ public class SchnapsenBoard {
      * If the loosing player has at least 33 score points in the round the winning player will receive 1 Bummerl point,
      * if they managed to get at least 1 trick the winning player will receive 2 Bummerl points,
      * if they did not get any tricks the winning player receives 3 Bummerl points.
-     *
+     * <p>
      * If no player had 66 score points in total, the last player to win a trick wins 1 Bummerl point.
-     *
+     * <p>
      * If the player that closed the talon wins, this scoring system is the same,
      * but the score the non closing player receives during the "closing" are not counted.
      * If they loosed after closing, all points they would receive when winning are given to the non-closing player
@@ -461,7 +461,7 @@ public class SchnapsenBoard {
                     {
                         player0Bummerl = player0Bummerl-3;
                     }
-                    else if(player0Score < 33) {
+                    else if(player1Score < 33) {
                         player0Bummerl = player0Bummerl-2;
                     } else {
                         player0Bummerl = player0Bummerl-1;
@@ -516,7 +516,7 @@ public class SchnapsenBoard {
     public String toString() {
         String leadCard = "";
         if (leadingCard != null) {
-            leadCard = "Leading Card: " + leadingCard.toString() + "\n" + "--------------------\n";
+            leadCard = "Leading Card: " + leadingCard + "\n" + "--------------------\n";
         }
         String sb =
                 "--------------------\n" +
