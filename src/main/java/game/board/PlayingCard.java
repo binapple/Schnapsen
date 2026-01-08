@@ -10,6 +10,7 @@ public class PlayingCard {
     private SchnapsenBoard.cardSuits suit;
     private String cardName;
     private int cardValue;
+    private PlayingCard possibleMarriage;
     //private String cardPicture;
     private boolean isTrumpSuit = false;
 
@@ -37,6 +38,14 @@ public class PlayingCard {
 
     public int getCardValue() {
         return cardValue;
+    }
+
+    public void setPossibleMarriage(PlayingCard possibleMarriage) {
+        this.possibleMarriage = possibleMarriage;
+    }
+
+    public PlayingCard getPossibleMarriage() {
+        return possibleMarriage;
     }
 
     @Override

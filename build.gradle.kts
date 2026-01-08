@@ -19,3 +19,16 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.jar {
+    manifest {
+        attributes(
+            "Sge-Type" to "game",
+            "Game-Class" to "game.Schnapsen",
+        )
+    }
+}
+
+tasks.withType<JavaExec> {
+    jvmArgs("-Dfile.encoding=UTF-8")
+}

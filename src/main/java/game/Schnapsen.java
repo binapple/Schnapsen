@@ -11,15 +11,41 @@ import at.ac.tuwien.ifs.sge.game.Game;
 import game.action.SchnapsenAction;
 import game.board.SchnapsenBoard;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
 
+    SchnapsenBoard schnapsenBoard;
+    List<ActionRecord<SchnapsenAction>> actionRecords;
+
+    public Schnapsen() {
+        //TODO: Remove seed used for testing
+        this (new SchnapsenBoard(new Random(0)));
+    }
+
+    public Schnapsen(SchnapsenBoard schnapsenBoard) {
+        this.schnapsenBoard = schnapsenBoard;
+        this.actionRecords = new ArrayList<>();
+    }
+
+    /**
+     * Constructor called by Game Engine
+     * In Schnapsen we only have 2 players, that is why we call our default constructor
+     *
+     * @param stringBoard string of board
+     * @param numberOfPlayers number of players
+     */
+    public Schnapsen(String stringBoard, int numberOfPlayers)
+    {
+        this();
+    }
 
     @Override
     public boolean isGameOver() {
-        return false;
+        return schnapsenBoard.isGameOver();
     }
 
     @Override
@@ -34,42 +60,44 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
 
     @Override
     public int getNumberOfPlayers() {
-        return 0;
+        return 2;
     }
 
     @Override
     public int getCurrentPlayer() {
-        return 0;
+        return schnapsenBoard.getPlayerTurnId();
     }
 
     @Override
     public double getUtilityValue(int i) {
-        return 0;
+        return schnapsenBoard.getUtilityValue(i);
     }
 
     @Override
     public Set<SchnapsenAction> getPossibleActions() {
-        return Set.of();
+        return SchnapsenAction.getPossibleActions(schnapsenBoard,getCurrentPlayer());
     }
 
     @Override
     public SchnapsenBoard getBoard() {
-        return null;
+        return schnapsenBoard;
     }
 
     @Override
     public Game<SchnapsenAction, SchnapsenBoard> doAction(SchnapsenAction schnapsenAction) {
-        return null;
+        schnapsenAction.doAction();
+        actionRecords.add(new ActionRecord<SchnapsenAction>(getCurrentPlayer(),schnapsenAction));
+        return this;
     }
 
     @Override
     public SchnapsenAction determineNextAction() {
-        return null;
+        return getPossibleActions().iterator().next();
     }
 
     @Override
     public List<ActionRecord<SchnapsenAction>> getActionRecords() {
-        return List.of();
+        return actionRecords;
     }
 
     @Override
@@ -79,6 +107,11 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
 
     @Override
     public Game<SchnapsenAction, SchnapsenBoard> getGame(int i) {
-        return null;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return schnapsenBoard.toString();
     }
 }

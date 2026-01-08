@@ -7,8 +7,10 @@
 package game.board;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SchnapsenBoard {
+
     public enum cardSuits {
         SPADES,
         HEARTS,
@@ -35,9 +37,10 @@ public class SchnapsenBoard {
     //Score for marriages only gets added if the player has made any tricks
     private int player0MarriageTempScore;
     private int player1MarriageTempScore;
+    private PlayingCard marriageCardDeclared;
 
     private boolean talonClosed = false;
-    private int talonClosingPlayerId;
+    private int talonClosingPlayerId = -1;
     private int talonClosedEnemyScore;
 
     private PlayingCard trumpCard;
@@ -45,36 +48,56 @@ public class SchnapsenBoard {
 
     private PlayingCard leadingCard;
 
-    private final int startingPlayer;
+    private int startingPlayer;
     private int playerTurnId;
 
     /**
-     * Creating the initial Cards and preparing the board for the first round
+     * Creating the Cards and preparing the board for the next round
      */
-    private void boardInitialisation() {
-        playingCardPile.add(new PlayingCard(cardSuits.SPADES, "J♠", 2));
-        playingCardPile.add(new PlayingCard(cardSuits.SPADES, "Q♠", 3));
-        playingCardPile.add(new PlayingCard(cardSuits.SPADES, "K♠", 4));
-        playingCardPile.add(new PlayingCard(cardSuits.SPADES, "10♠", 10));
-        playingCardPile.add(new PlayingCard(cardSuits.SPADES, "A♠", 11));
+    private void roundInitialisation() {
+        playingCardPile.add(new PlayingCard(cardSuits.SPADES, "JS", 2));
+        //Adding possible marriages to the spades cards
+        PlayingCard queenSpades = new PlayingCard(cardSuits.SPADES, "QS", 3);
+        PlayingCard kingSpades = new PlayingCard(cardSuits.SPADES, "KS", 4);
+        queenSpades.setPossibleMarriage(kingSpades);
+        kingSpades.setPossibleMarriage(queenSpades);
+        playingCardPile.add(queenSpades);
+        playingCardPile.add(kingSpades);
+        playingCardPile.add(new PlayingCard(cardSuits.SPADES, "10S", 10));
+        playingCardPile.add(new PlayingCard(cardSuits.SPADES, "AS", 11));
 
-        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, "J♡", 2));
-        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, "Q♡", 3));
-        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, "K♡", 4));
-        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, "10♡", 10));
-        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, "A♡", 11));
+        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, "JH", 2));
+        //Adding possible marriages to the hearts cards
+        PlayingCard queenHearts = new PlayingCard(cardSuits.HEARTS, "QH", 3);
+        PlayingCard kingHearts = new PlayingCard(cardSuits.HEARTS, "KH", 4);
+        queenHearts.setPossibleMarriage(kingHearts);
+        kingHearts.setPossibleMarriage(queenHearts);
+        playingCardPile.add(queenHearts);
+        playingCardPile.add(kingHearts);
+        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, "10H", 10));
+        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, "AH", 11));
 
-        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, "J♢", 2));
-        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, "Q♢", 3));
-        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, "K♢", 4));
-        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, "10♢", 10));
-        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, "A♢", 11));
+        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, "JD", 2));
+        //Adding possible marriages to the hearts cards
+        PlayingCard queenDiamonds = new PlayingCard(cardSuits.DIAMONDS, "QD", 3);
+        PlayingCard kingDiamonds = new PlayingCard(cardSuits.DIAMONDS, "KD", 4);
+        queenDiamonds.setPossibleMarriage(kingDiamonds);
+        kingDiamonds.setPossibleMarriage(queenDiamonds);
+        playingCardPile.add(queenDiamonds);
+        playingCardPile.add(kingDiamonds);
+        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, "10D", 10));
+        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, "AD", 11));
 
-        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, "J♣", 2));
-        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, "Q♣", 3));
-        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, "K♣", 4));
-        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, "10♣", 10));
-        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, "A♣", 11));
+        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, "JC", 2));
+        //Adding possible marriages to the hearts cards
+        PlayingCard queenClubs = new PlayingCard(cardSuits.CLUBS, "QC", 3);
+        PlayingCard kingClubs = new PlayingCard(cardSuits.CLUBS, "KC", 4);
+        queenClubs.setPossibleMarriage(kingClubs);
+        kingClubs.setPossibleMarriage(queenClubs);
+        playingCardPile.add(queenClubs);
+        playingCardPile.add(kingClubs);
+        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, "10C", 10));
+        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, "AC", 11));
 
         shuffleCards();
         createTrumpCard();
@@ -95,11 +118,11 @@ public class SchnapsenBoard {
      *
      * @param random object that manipulates the shuffling of the deck
      */
-    SchnapsenBoard(Random random) {
+    public SchnapsenBoard(Random random) {
         startingPlayer = 0;
-        playerTurnId = 1 - startingPlayer;
+        playerTurnId = startingPlayer;
         this.random = random;
-        boardInitialisation();
+        roundInitialisation();
 
     }
 
@@ -163,7 +186,7 @@ public class SchnapsenBoard {
      * @param playerId id of player playing the card
      * @param card     the card the player wants to play
      */
-    private void playCard(int playerId, PlayingCard card) {
+    public void playCard(int playerId, PlayingCard card) {
         if (playerTurnId == playerId) {
             List<PlayingCard> playerCards;
             if (playerId == 0) {
@@ -174,6 +197,18 @@ public class SchnapsenBoard {
 
             if (playerCards.contains(card)) {
                 if (leadingCard == null) {
+
+                    //if marriage was declared, the player has to lead with one of the two marriage partner cards
+                    if(marriageCardDeclared != null) {
+                        if(marriageCardDeclared.equals(card) || marriageCardDeclared.getPossibleMarriage().equals(card)) {
+                            leadingCard = card;
+                            playerCards.remove(card);
+                            marriageCardDeclared = null;
+                        } else
+                        {
+                            throw new IllegalArgumentException("Player has to play one of the declared marriage partners!");
+                        }
+                    }
                     leadingCard = card;
                     playerCards.remove(leadingCard);
                 } else {
@@ -233,7 +268,7 @@ public class SchnapsenBoard {
                             player0Score += player0MarriageTempScore;
                             player0MarriageTempScore = 0;
                         }
-                        if(!talonClosed) {
+                        if(!talonClosed && !playingCardPile.isEmpty()) {
                             passCards(0, 1);
                         }
                     } else {
@@ -243,7 +278,7 @@ public class SchnapsenBoard {
                             player1Score += player1MarriageTempScore;
                             player1MarriageTempScore = 0;
                         }
-                        if(!talonClosed) {
+                        if(!talonClosed &&  !playingCardPile.isEmpty()) {
                             passCards(1,1);
                         }
                     }
@@ -273,7 +308,7 @@ public class SchnapsenBoard {
      *
      * @param playerId id of the player to make the exchange
      */
-    private void exchangeTrumpCard(int playerId) {
+    public void exchangeTrumpCard(int playerId) {
 
         if (playerId == playerTurnId && leadingCard == null) {
             List<PlayingCard> playerCards;
@@ -284,20 +319,24 @@ public class SchnapsenBoard {
             }
 
             String jackName = switch (trumpSuit) {
-                case SPADES -> "J♠";
-                case HEARTS -> "J♡";
-                case DIAMONDS -> "J♢";
-                case CLUBS -> "J♣";
+                case SPADES -> "JS";
+                case HEARTS -> "JH";
+                case DIAMONDS -> "JD";
+                case CLUBS -> "JC";
             };
 
+            PlayingCard cardSwitch = null;
             for (PlayingCard playingCard : playerCards) {
                 if (playingCard.getCardName().equals(jackName)) {
-                    PlayingCard cardSwitch = trumpCard;
+                    cardSwitch = trumpCard;
                     trumpCard = playingCard;
-                    playerCards.remove(playingCard);
-                    playerCards.add(cardSwitch);
                 }
             }
+            if(cardSwitch != null) {
+                playerCards.remove(trumpCard);
+                playerCards.add(cardSwitch);
+            }
+            
         } else {
             throw new IllegalStateException("Player can only swap Trump Card if they are the leading player");
         }
@@ -307,12 +346,13 @@ public class SchnapsenBoard {
     /**
      * Leading players are allowed to declare a marriage of the Queen and King of the same suit to earn points.
      * Trump marriages gain 40 points, the others gain 20.
-     *
+     * <p>
+     * A common rule is that one has to play one of the two declared marriage cards after the declaration, therefore we track this card
      * @param playerId      id of player to declare marriage
      * @param marriageCard1 first card of the marriage
      * @param marriageCard2 second card of the marriage
      */
-    private void declareMarriage(int playerId, PlayingCard marriageCard1, PlayingCard marriageCard2) {
+    public void declareMarriage(int playerId, PlayingCard marriageCard1, PlayingCard marriageCard2) {
         if (playerTurnId == playerId && leadingCard == null) {
             List<PlayingCard> playerCards;
             if (playerId == 0) {
@@ -320,32 +360,47 @@ public class SchnapsenBoard {
             } else {
                 playerCards = player1Cards;
             }
-            int tempScore = 0;
+            int tempScore;
             if (playerCards.contains(marriageCard1) && playerCards.contains(marriageCard2)) {
-                if (marriageCard1.getSuit() == marriageCard2.getSuit()) {
-                    if (marriageCard1.getCardValue() != marriageCard2.getCardValue()) {
-                        if (marriageCard1.getCardValue() == 3 || marriageCard1.getCardValue() == 4) {
-                            if (marriageCard2.getCardValue() == 3 || marriageCard1.getCardValue() == 4) {
-                                if (marriageCard1.isTrumpSuit()) {
-                                    tempScore = 40;
-                                } else {
-                                    tempScore = 20;
-                                }
-                            }
+                if(marriageCard1.getPossibleMarriage() != null)
+                {
+                    if(marriageCard1.getPossibleMarriage().equals(marriageCard2))
+                    {
+                        if(marriageCard1.isTrumpSuit())
+                        {
+                            tempScore = 40;
                         }
-                    } else throw new IllegalArgumentException("Marriage cards are the same card!");
-                } else throw new IllegalArgumentException("Marriage cards are not the same suit");
+                        else {
+                            tempScore = 20;
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Cards can not form a correct marriage");
+                    }
+                } else {
+                    throw new IllegalArgumentException("Cards are not able to be married");
+                }
 
                 if (tempScore > 0) {
+                    //marriage declared storing marriage Card for action restriction
+                    marriageCardDeclared = marriageCard1;
+
                     if (playerId == 0) {
                         if (player0Score != 0) {
                             player0Score += tempScore;
+                            //Board checks if round is over
+                            if (isRoundOver()){
+                                calculateBummerl();
+                            }
                         } else {
                             player0MarriageTempScore = tempScore;
                         }
                     } else {
                         if (player1Score != 0) {
                             player1Score += tempScore;
+                            //Board checks if round is over
+                            if (isRoundOver()){
+                                calculateBummerl();
+                            }
                         } else {
                             player1MarriageTempScore = tempScore;
                         }
@@ -361,7 +416,7 @@ public class SchnapsenBoard {
      * Leading players can close the talon to stop the drawing of new cards and enforce the follow suit rule
      * @param playerId id of player to close the talon
      */
-    private void closeTalon(int playerId) {
+    public void closeTalon(int playerId) {
         if(playerTurnId == playerId && leadingCard == null) {
             talonClosed = true;
             talonClosingPlayerId = playerId;
@@ -401,10 +456,10 @@ public class SchnapsenBoard {
                 {
                     if(player0Score >= 66)
                     {
-                        if(player1Score == 0)
+                        if(talonClosedEnemyScore == 0)
                         {
                             player0Bummerl = player0Bummerl-3;
-                        } else if(player1Score < 33)
+                        } else if(talonClosedEnemyScore < 33)
                         {
                             player0Bummerl = player0Bummerl-2;
                         }
@@ -425,10 +480,10 @@ public class SchnapsenBoard {
                 else
                 {
                     if(player1Score >= 66){
-                        if(player0Score == 0)
+                        if(talonClosedEnemyScore == 0)
                         {
                             player1Bummerl = player1Bummerl-3;
-                        } else if (player0Score < 33)
+                        } else if (talonClosedEnemyScore < 33)
                         {
                             player1Bummerl = player1Bummerl-2;
                         } else  {
@@ -471,7 +526,7 @@ public class SchnapsenBoard {
                     {
                         player0Bummerl = player0Bummerl-1;
                     } else {
-                        player0Bummerl = player0Bummerl-1;
+                        player1Bummerl = player1Bummerl-1;
                     }
                 }
 
@@ -487,6 +542,10 @@ public class SchnapsenBoard {
             else {
                 System.out.println("Round over! Player 1 has " + player0Bummerl + " points left on the Bummerl!");
                 System.out.println("Round over! Player 2 has " + player1Bummerl + " points left on the Bummerl!");
+
+                //If game is not over yet, the starting player shifts and a new round begins
+                startingPlayer = 1 - startingPlayer;
+                resetRound();
             }
         }
     }
@@ -502,10 +561,56 @@ public class SchnapsenBoard {
     }
 
     /**
+     * This method resets the round as long as the game is not over
+     */
+    private void resetRound() {
+        if(!isGameOver())
+        {
+            //resetting round scores
+            player0Score = 0;
+            player1Score = 0;
+
+            //resetting hands
+            player0Cards.clear();
+            player1Cards.clear();
+
+            //resetting tricks
+            player0Tricks.clear();
+            player1Tricks.clear();
+
+            //resetting pile
+            playingCardPile.clear();
+
+            //resetting marriage scores and card
+            player0MarriageTempScore = 0;
+            player1MarriageTempScore = 0;
+            marriageCardDeclared = null;
+
+            //resetting talon logic
+            talonClosed = false;
+            talonClosingPlayerId = -1;
+            talonClosedEnemyScore = 0;
+
+            //resetting trumps
+            trumpCard = null;
+            trumpSuit = null;
+
+            //resetting leading card
+            leadingCard = null;
+
+            //setting playerTurnId to starting player
+            playerTurnId = startingPlayer;
+
+            //starting new round
+            roundInitialisation();
+        }
+    }
+
+    /**
      * If the overall score of one player is 0 or lower the game is over (counted down from 7)
      * @return boolean that checks if the game is over
      */
-    private boolean isGameOver() {
+    public boolean isGameOver() {
         return player0Bummerl <= 0 || player1Bummerl <= 0;
     }
 
@@ -518,18 +623,88 @@ public class SchnapsenBoard {
         if (leadingCard != null) {
             leadCard = "Leading Card: " + leadingCard + "\n" + "--------------------\n";
         }
+
+        String talonCards = "";
+        if(talonClosed) {
+            talonCards = "Talon closed, trump suit: " + switch (trumpSuit) {case SPADES -> "(S)pades"; case HEARTS ->  "(H)earts"; case DIAMONDS ->  "(D)iamonds"; case CLUBS -> "(C)lubs";} + "\n";
+        } else if (this.playingCardPile.isEmpty()) {
+            talonCards = "Playing pile empty, trump suit: " + switch (trumpSuit) {case SPADES -> "(S)pades"; case HEARTS ->  "(H)earts"; case DIAMONDS ->  "(D)iamonds"; case CLUBS -> "(C)lubs";} + "\n";
+        } else {
+            talonCards ="Remaining Cards: " + playingCardPile.size() + " Trump Card: " + trumpCard.toString() + "\n";
+        }
+
         String sb =
+                "-------------------\n" +
+                ".... SCHNAPSEN ´´´´\n" +
+                "-------------------\n" +
+                "Player 1's Hand: " + player0Cards + " Player 1's Score: " + player0Score + " Player 1's Tricks: " + player0Tricks.stream()
+                        .map(Arrays::toString) // Converts each PlayingCard[] to a readable String
+                        .collect(Collectors.joining(", ", "[", "]")) + "\n" +
                 "--------------------\n" +
-                "♠♡♢♣ SCHNAPSEN ♣♢♡♠\n" +
-                "--------------------\n" +
-                "Player 1's Hand: " + player0Cards + " Player 1's Score: " + player0Score + " Player 1's Tricks: " + player0Tricks + "\n" +
-                "--------------------\n" +
-                "Remaining Cards: " + playingCardPile.size() + " Trump Card: " + trumpCard.toString() + "\n" +
+                talonCards +
                 "--------------------\n" +
                 leadCard +
                 "Drawing Pile: " + playingCardPile + "\n" +
                 "--------------------\n" +
-                "Player 2's Hand: " + player1Cards + " Player 2's Score: " + player1Score + " Player 2's Tricks: " + player1Tricks + "\n";
+                "Player 2's Hand: " + player1Cards + " Player 2's Score: " + player1Score + " Player 2's Tricks: " + player1Tricks.stream()
+                .map(Arrays::toString) // Converts each PlayingCard[] to a readable String
+                .collect(Collectors.joining(", ", "[", "]")) + "\n" +
+                "--------------------\n" +
+                "Bummerl Score: Player 1: " + player0Bummerl + ", Player 2: " + player1Bummerl;
         return sb;
+    }
+
+    public int getPlayerTurnId() {
+        return playerTurnId;
+    }
+
+    /**
+     * This method gives a current overview of the players score, for the current round
+     * and the overall Bummerl score. To give the scores an accurate weight they are
+     * divided by the most extreme values:
+     * When having only 1 point left on the Bummerl and winning a 3 Bummerl point game the
+     * value would result in -2. To accustom this to our utility value we add 2 to the Bummerl score, which we subtract from 9 and then divide it by 9
+     * <p>
+     * To give an insight on the current round played we also look at the most extreme value:
+     * Having a score of 65 is not yet game ending. The highest increase in one action that can happen is a marriage of 40.
+     * That is why the current score of the player gets devided by 105.
+     * <p>
+     * These scores are than added to show the current standing of a players performance in this game
+     * @param playerId id of the player to check the score
+     * @return a double value of the players overall utility score
+     */
+    public double getUtilityValue(int playerId) {
+        if(playerId == 0)
+        {
+            return (9-player0Bummerl+2)/9.0d + player0Score/105.0d;
+        }
+        else {
+            return (9-player1Bummerl+2)/9.0d + player1Score/105.0d;
+        }
+    }
+
+    public List<PlayingCard> getPlayer1Cards() {
+        return player1Cards;
+    }
+
+    public List<PlayingCard> getPlayer0Cards() {
+        return player0Cards;
+    }
+
+    public PlayingCard getLeadingCard() {
+        return leadingCard;
+    }
+
+    public boolean isTalonClosed() {
+        return talonClosed;
+    }
+
+    public boolean playingCardPileIsEmpty()
+    {
+        return playingCardPile.isEmpty();
+    }
+
+    public PlayingCard getMarriageCardDeclared() {
+        return marriageCardDeclared;
     }
 }
