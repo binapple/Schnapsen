@@ -28,7 +28,3 @@ tasks.jar {
         )
     }
 }
-
-tasks.withType<JavaExec> {
-    jvmArgs("-Dfile.encoding=UTF-8")
-}

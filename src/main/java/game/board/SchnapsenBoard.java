@@ -18,13 +18,142 @@ public class SchnapsenBoard {
         CLUBS
     }
 
-    private final Random random;
-    private final LinkedList<PlayingCard> playingCardPile = new LinkedList<>();
-    private final List<PlayingCard> player0Cards = new ArrayList<>();
-    private final List<PlayingCard> player1Cards = new ArrayList<>();
+    public enum cardNames {
+        JackOfSpades {
+            @Override
+            public String toString() {
+                return "JS";
+            }
+        },
+        QueenOfSpades {
+            @Override
+            public String toString() {
+                return "QS";
+            }
+        },
+        KingOfSpades {
+            @Override
+            public String toString() {
+                return "KS";
+            }
+        },
+        TenOfSpades {
+            @Override
+            public String toString() {
+                return "10S";
+            }
+        },
+        AceOfSpades {
+            @Override
+            public String toString() {
+                return "AS";
+            }
+        },
+        JackOfHearts {
+            @Override
+            public String toString() {
+                return "JH";
+            }
+        },
+        QueenOfHearts {
+            @Override
+            public String toString() {
+                return "QH";
+            }
+        },
+        KingOfHearts {
+            @Override
+            public String toString() {
+                return "KH";
+            }
+        },
+        TenOfHearts {
+            @Override
+            public String toString() {
+                return "10H";
+            }
+        },
+        AceOfHearts {
+            @Override
+            public String toString() {
+                return "AH";
+            }
+        },
+        JackOfDiamonds {
+            @Override
+            public String toString() {
+                return "JD";
+            }
+        },
+        QueenOfDiamonds {
+            @Override
+            public String toString() {
+                return "QD";
+            }
+        },
+        KingOfDiamonds {
+            @Override
+            public String toString() {
+                return "KD";
+            }
+        },
+        TenOfDiamonds {
+            @Override
+            public String toString() {
+                return "10D";
+            }
+        },
+        AceOfDiamonds {
+            @Override
+            public String toString() {
+                return "AD";
+            }
+        },
+        JackOfClubs {
+            @Override
+            public String toString() {
+                return "JC";
+            }
+        },
+        QueenOfClubs {
+            @Override
+            public String toString() {
+                return "QC";
+            }
+        },
+        KingOfClubs {
+            @Override
+            public String toString() {
+                return "KC";
+            }
+        },
+        TenOfClubs {
+            @Override
+            public String toString() {
+                return "10C";
+            }
+        },
+        AceOfClubs {
+            @Override
+            public String toString() {
+                return "AC";
+            }
+        },
+        PlaceHolder {
+            @Override
+            public String toString() {
+                return "Hidden Card";
+            }
+        }
+    }
 
-    private final List<PlayingCard[]> player0Tricks = new ArrayList<>();
-    private final List<PlayingCard[]> player1Tricks = new ArrayList<>();
+    private Random random;
+    private LinkedList<PlayingCard> playingCardPile = new LinkedList<>();
+    private List<PlayingCard> player0Cards = new ArrayList<>();
+    private List<PlayingCard> player1Cards = new ArrayList<>();
+
+    private List<PlayingCard[]> player0Tricks = new ArrayList<>();
+    private List<PlayingCard[]> player1Tricks = new ArrayList<>();
 
     private int player0Score;
     private int player1Score;
@@ -52,53 +181,64 @@ public class SchnapsenBoard {
     private int playerTurnId;
 
     /**
-     * Creating the Cards and preparing the board for the next round
+     * Creating the playing cards and adding them to the playing card pile
      */
-    private void roundInitialisation() {
-        playingCardPile.add(new PlayingCard(cardSuits.SPADES, "JS", 2));
+    private void createCards()
+    {
+        playingCardPile.add(new PlayingCard(cardSuits.SPADES, cardNames.JackOfSpades, 2));
         //Adding possible marriages to the spades cards
-        PlayingCard queenSpades = new PlayingCard(cardSuits.SPADES, "QS", 3);
-        PlayingCard kingSpades = new PlayingCard(cardSuits.SPADES, "KS", 4);
+        PlayingCard queenSpades = new PlayingCard(cardSuits.SPADES, cardNames.QueenOfSpades, 3);
+        PlayingCard kingSpades = new PlayingCard(cardSuits.SPADES, cardNames.KingOfSpades, 4);
         queenSpades.setPossibleMarriage(kingSpades);
         kingSpades.setPossibleMarriage(queenSpades);
         playingCardPile.add(queenSpades);
         playingCardPile.add(kingSpades);
-        playingCardPile.add(new PlayingCard(cardSuits.SPADES, "10S", 10));
-        playingCardPile.add(new PlayingCard(cardSuits.SPADES, "AS", 11));
+        playingCardPile.add(new PlayingCard(cardSuits.SPADES, cardNames.TenOfSpades, 10));
+        playingCardPile.add(new PlayingCard(cardSuits.SPADES, cardNames.AceOfSpades, 11));
 
-        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, "JH", 2));
+        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, cardNames.JackOfHearts, 2));
         //Adding possible marriages to the hearts cards
-        PlayingCard queenHearts = new PlayingCard(cardSuits.HEARTS, "QH", 3);
-        PlayingCard kingHearts = new PlayingCard(cardSuits.HEARTS, "KH", 4);
+        PlayingCard queenHearts = new PlayingCard(cardSuits.HEARTS, cardNames.QueenOfHearts, 3);
+        PlayingCard kingHearts = new PlayingCard(cardSuits.HEARTS, cardNames.KingOfHearts, 4);
         queenHearts.setPossibleMarriage(kingHearts);
         kingHearts.setPossibleMarriage(queenHearts);
         playingCardPile.add(queenHearts);
         playingCardPile.add(kingHearts);
-        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, "10H", 10));
-        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, "AH", 11));
+        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, cardNames.TenOfHearts, 10));
+        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, cardNames.AceOfHearts, 11));
 
-        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, "JD", 2));
+        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, cardNames.JackOfDiamonds, 2));
         //Adding possible marriages to the hearts cards
-        PlayingCard queenDiamonds = new PlayingCard(cardSuits.DIAMONDS, "QD", 3);
-        PlayingCard kingDiamonds = new PlayingCard(cardSuits.DIAMONDS, "KD", 4);
+        PlayingCard queenDiamonds = new PlayingCard(cardSuits.DIAMONDS, cardNames.QueenOfDiamonds, 3);
+        PlayingCard kingDiamonds = new PlayingCard(cardSuits.DIAMONDS, cardNames.KingOfDiamonds, 4);
         queenDiamonds.setPossibleMarriage(kingDiamonds);
         kingDiamonds.setPossibleMarriage(queenDiamonds);
         playingCardPile.add(queenDiamonds);
         playingCardPile.add(kingDiamonds);
-        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, "10D", 10));
-        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, "AD", 11));
+        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, cardNames.TenOfDiamonds, 10));
+        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, cardNames.AceOfDiamonds, 11));
 
-        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, "JC", 2));
+        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, cardNames.JackOfClubs, 2));
         //Adding possible marriages to the hearts cards
-        PlayingCard queenClubs = new PlayingCard(cardSuits.CLUBS, "QC", 3);
-        PlayingCard kingClubs = new PlayingCard(cardSuits.CLUBS, "KC", 4);
+        PlayingCard queenClubs = new PlayingCard(cardSuits.CLUBS, cardNames.QueenOfClubs, 3);
+        PlayingCard kingClubs = new PlayingCard(cardSuits.CLUBS, cardNames.KingOfClubs, 4);
         queenClubs.setPossibleMarriage(kingClubs);
         kingClubs.setPossibleMarriage(queenClubs);
         playingCardPile.add(queenClubs);
         playingCardPile.add(kingClubs);
-        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, "10C", 10));
-        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, "AC", 11));
+        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, cardNames.TenOfClubs, 10));
+        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, cardNames.AceOfClubs, 11));
+    }
 
+    /**
+     * preparing the board for the next round
+     */
+    private void roundInitialisation() {
+
+        if(playingCardPile.isEmpty())
+        {
+            createCards();
+        }
         shuffleCards();
         createTrumpCard();
         passCards(startingPlayer, 5);
@@ -124,6 +264,106 @@ public class SchnapsenBoard {
         this.random = random;
         roundInitialisation();
 
+    }
+
+    public SchnapsenBoard(SchnapsenBoard schnapsenBoard) {
+        this(schnapsenBoard.player0Cards, schnapsenBoard.player1Cards, schnapsenBoard.playingCardPile, schnapsenBoard.player0Tricks,
+                schnapsenBoard.player1Tricks, schnapsenBoard.startingPlayer, schnapsenBoard.playerTurnId, schnapsenBoard.random, schnapsenBoard.player0MarriageTempScore,
+                schnapsenBoard.player1MarriageTempScore, schnapsenBoard.player0Bummerl, schnapsenBoard.player1Bummerl, schnapsenBoard.player0Score, schnapsenBoard.player1Score,
+                schnapsenBoard.talonClosingPlayerId, schnapsenBoard.talonClosedEnemyScore, schnapsenBoard.talonClosed, schnapsenBoard.leadingCard,
+                schnapsenBoard.trumpCard, schnapsenBoard.trumpSuit,schnapsenBoard.marriageCardDeclared);
+    }
+
+    /**
+     * Creates a deep copy of a Schnapsen board based on the inputs given, the new board also features new Cards
+     */
+    public SchnapsenBoard(List<PlayingCard> player0Cards,
+                          List<PlayingCard> player1Cards,
+                          LinkedList<PlayingCard> playingCardPile,
+                          List<PlayingCard[]> player0Tricks,
+                          List<PlayingCard[]> player1Tricks,
+                          int startingPlayer,
+                          int playerTurnId,
+                          Random random,
+                          int player0MarriageTempScore,
+                          int player1MarriageTempScore,
+                          int player0Bummerl,
+                          int player1Bummerl,
+                          int player0Score,
+                          int player1Score,
+                          int talonClosingPlayerId,
+                          int talonClosedEnemyScore,
+                          boolean talonClosed,
+                          PlayingCard leadingCard,
+                          PlayingCard trumpCard,
+                          SchnapsenBoard.cardSuits trumpSuit,
+                          PlayingCard marriageCardDeclared
+
+                          ) {
+
+        this.createCards();
+
+        this.player0Cards = new ArrayList<>();
+        this.player1Cards = new ArrayList<>();
+        this.player0Tricks = new ArrayList<>();
+        this.player1Tricks = new ArrayList<>();
+        List<PlayingCard> newPile = new ArrayList<>(this.playingCardPile);
+        this.playingCardPile.clear();
+
+        this.trumpCard = findCardInPile(newPile, trumpCard);
+        this.trumpCard.setIsTrumpSuit(true);
+        if (marriageCardDeclared != null){
+            this.marriageCardDeclared = findCardInPile(newPile, marriageCardDeclared);
+            this.marriageCardDeclared.setIsTrumpSuit(marriageCardDeclared.isTrumpSuit());
+        }
+        if (leadingCard != null){
+            this.leadingCard = findCardInPile(newPile, leadingCard);
+            this.leadingCard.setIsTrumpSuit(leadingCard.isTrumpSuit());
+        }
+
+        for(PlayingCard playingCard : player0Cards)
+        {
+            PlayingCard foundCard = findCardInPile(newPile, playingCard);
+            foundCard.setIsTrumpSuit(playingCard.isTrumpSuit());
+            this.player0Cards.add(foundCard);
+        }
+
+        for(PlayingCard playingCard : player1Cards)
+        {
+            PlayingCard foundCard = findCardInPile(newPile, playingCard);
+            foundCard.setIsTrumpSuit(playingCard.isTrumpSuit());
+            this.player1Cards.add(foundCard);
+        }
+
+        for(PlayingCard playingCard : playingCardPile)
+        {
+            PlayingCard foundCard = findCardInPile(newPile, playingCard);
+            foundCard.setIsTrumpSuit(playingCard.isTrumpSuit());
+            this.playingCardPile.add(foundCard);
+        }
+
+        this.player0Tricks = player0Tricks;
+        this.player1Tricks = player1Tricks;
+        this.startingPlayer = startingPlayer;
+        this.playerTurnId = playerTurnId;
+        this.random = random;
+        this.player0MarriageTempScore = player0MarriageTempScore;
+        this.player1MarriageTempScore = player1MarriageTempScore;
+        this.player0Bummerl = player0Bummerl;
+        this.player1Bummerl = player1Bummerl;
+        this.player0Score = player0Score;
+        this.player1Score = player1Score;
+        this.talonClosingPlayerId = talonClosingPlayerId;
+        this.talonClosedEnemyScore = talonClosedEnemyScore;
+        this.talonClosed = talonClosed;
+        this.trumpSuit = trumpSuit;
+    }
+
+    private PlayingCard findCardInPile(List<PlayingCard> pile, PlayingCard targetCard){
+        if(targetCard.getCardName() == cardNames.PlaceHolder) {
+            return new PlayingCard(cardSuits.SPADES,cardNames.PlaceHolder,0);
+        }
+        return pile.stream().filter(p -> p.equals(targetCard)).findFirst().orElse(null);
     }
 
     /**
@@ -187,7 +427,7 @@ public class SchnapsenBoard {
      * @param card     the card the player wants to play
      */
     public void playCard(int playerId, PlayingCard card) {
-        if (playerTurnId == playerId) {
+       if (playerTurnId == playerId) {
             List<PlayingCard> playerCards;
             if (playerId == 0) {
                 playerCards = player0Cards;
@@ -300,7 +540,7 @@ public class SchnapsenBoard {
                 playerTurnId = 1 - playerTurnId;
 
             } else throw new IllegalArgumentException("Card not in players hand!");
-        } else throw new IllegalStateException("It is not the players turn!");
+       } else throw new IllegalStateException("It is not the players turn!");
     }
 
     /**
@@ -318,11 +558,11 @@ public class SchnapsenBoard {
                 playerCards = player1Cards;
             }
 
-            String jackName = switch (trumpSuit) {
-                case SPADES -> "JS";
-                case HEARTS -> "JH";
-                case DIAMONDS -> "JD";
-                case CLUBS -> "JC";
+            cardNames jackName = switch (trumpSuit) {
+                case SPADES -> cardNames.JackOfSpades;
+                case HEARTS -> cardNames.JackOfHearts;
+                case DIAMONDS -> cardNames.JackOfDiamonds;
+                case CLUBS -> cardNames.JackOfClubs;
             };
 
             PlayingCard cardSwitch = null;
@@ -330,11 +570,14 @@ public class SchnapsenBoard {
                 if (playingCard.getCardName().equals(jackName)) {
                     cardSwitch = trumpCard;
                     trumpCard = playingCard;
+                    break;
                 }
             }
             if(cardSwitch != null) {
                 playerCards.remove(trumpCard);
                 playerCards.add(cardSwitch);
+                playingCardPile.remove(cardSwitch);
+                playingCardPile.addLast(trumpCard);
             }
             
         } else {
@@ -644,7 +887,7 @@ public class SchnapsenBoard {
                 talonCards +
                 "--------------------\n" +
                 leadCard +
-                "Drawing Pile: " + playingCardPile + "\n" +
+                //"Drawing Pile: " + playingCardPile + "\n" + //-> for testing
                 "--------------------\n" +
                 "Player 2's Hand: " + player1Cards + " Player 2's Score: " + player1Score + " Player 2's Tricks: " + player1Tricks.stream()
                 .map(Arrays::toString) // Converts each PlayingCard[] to a readable String
@@ -683,16 +926,57 @@ public class SchnapsenBoard {
         }
     }
 
+    /**
+     * This method strips all information of the game that is not tied to the player.
+     * This includes all the cards in the drawing pile (except the trump card)
+     * and the cards in the opposing players hand
+     */
+    public void hideInformation(int playerId) {
+        if (playerId == 0) {
+            int player1CardNum = player1Cards.size();
+            player1Cards.clear();
+            for (int i = 0; i < player1CardNum; i++) {
+                player1Cards.add(new PlayingCard(cardSuits.SPADES, cardNames.PlaceHolder, 0));
+            }
+        } else {
+            int player0CardNum = player0Cards.size();
+            player0Cards.clear();
+            for (int i = 0; i < player0CardNum; i++) {
+                player0Cards.add(new PlayingCard(cardSuits.SPADES, cardNames.PlaceHolder, 0));
+            }
+        }
+
+        int playingCardNum = playingCardPile.size();
+        //only add hidden cards and a trumpCard at the bottom of the deck if it is not empty yet
+        if(playingCardNum != 0) {
+            playingCardPile.clear();
+            for (int i = 0; i < playingCardNum - 1; i++) {
+                playingCardPile.add(new PlayingCard(cardSuits.SPADES, cardNames.PlaceHolder, 0));
+            }
+            playingCardPile.addLast(trumpCard);
+        }
+    }
+
     public List<PlayingCard> getPlayer1Cards() {
-        return player1Cards;
+        if(this.getPlayerTurnId()== 1)
+            return player1Cards;
+        else
+            return new ArrayList<>();
     }
 
     public List<PlayingCard> getPlayer0Cards() {
-        return player0Cards;
+        if(this.getPlayerTurnId()== 0)
+            return player0Cards;
+        else
+            return new ArrayList<>();
     }
 
     public PlayingCard getLeadingCard() {
         return leadingCard;
+    }
+
+    public PlayingCard getTrumpCard() {
+        return trumpCard;
     }
 
     public boolean isTalonClosed() {
@@ -706,5 +990,13 @@ public class SchnapsenBoard {
 
     public PlayingCard getMarriageCardDeclared() {
         return marriageCardDeclared;
+    }
+
+    public List<PlayingCard[]> getPlayer0Tricks() {
+        return player0Tricks;
+    }
+
+    public List<PlayingCard[]> getPlayer1Tricks() {
+        return player1Tricks;
     }
 }

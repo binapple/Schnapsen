@@ -9,12 +9,10 @@ package game;
 import at.ac.tuwien.ifs.sge.game.ActionRecord;
 import at.ac.tuwien.ifs.sge.game.Game;
 import game.action.SchnapsenAction;
+import game.board.PlayingCard;
 import game.board.SchnapsenBoard;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
 
@@ -41,6 +39,19 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
     public Schnapsen(String stringBoard, int numberOfPlayers)
     {
         this();
+    }
+
+    /**
+     * This constructor is used to create a board with hidden information (information for the player only)
+     * @param schnapsenBoard the board with full information
+     * @param playerId id of the player
+     */
+    public Schnapsen(SchnapsenBoard schnapsenBoard, int playerId)
+    {
+        SchnapsenBoard newBoard = new SchnapsenBoard(schnapsenBoard);
+        newBoard.hideInformation(playerId);
+        this.schnapsenBoard = newBoard;
+        this.actionRecords = new ArrayList<>();
     }
 
     @Override
@@ -85,7 +96,7 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
 
     @Override
     public Game<SchnapsenAction, SchnapsenBoard> doAction(SchnapsenAction schnapsenAction) {
-        schnapsenAction.doAction();
+        schnapsenAction.doAction(this.schnapsenBoard);
         actionRecords.add(new ActionRecord<SchnapsenAction>(getCurrentPlayer(),schnapsenAction));
         return this;
     }
@@ -107,7 +118,8 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
 
     @Override
     public Game<SchnapsenAction, SchnapsenBoard> getGame(int i) {
-        return this;
+        return new Schnapsen(this.schnapsenBoard, this.getCurrentPlayer());
+        //return this;
     }
 
     @Override

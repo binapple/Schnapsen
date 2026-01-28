@@ -11,18 +11,24 @@ import game.board.SchnapsenBoard;
 
 import java.util.*;
 
-public class SchnapsenAction {
+public class SchnapsenAction implements Comparable<SchnapsenAction> {
 
     private Boolean talonOrExchange = null;
     private int playerId;
     private PlayingCard playCard;
     private PlayingCard marriage1;
     private PlayingCard marriage2;
-    private SchnapsenBoard schnapsenBoard;
     private String actionMessage;
 
     public static Set<SchnapsenAction> getPossibleActions(SchnapsenBoard board, int playerId) {
-        Set<SchnapsenAction> possibleActions = new HashSet<>();
+        Set<SchnapsenAction> possibleActions = new TreeSet<>();
+
+        //return empty set if game is over (as stated by the engine)
+        if(board.isGameOver())
+        {
+            return possibleActions;
+        }
+
         List<PlayingCard> possibleMarriageCards = new ArrayList<>();
         List<PlayingCard> playerCards;
         PlayingCard leadingCard = board.getLeadingCard();
@@ -42,8 +48,8 @@ public class SchnapsenAction {
             if (marriageCard != null) {
                 if(playerCards.contains(marriageCard)) {
                     if(playerCards.contains(marriageCard.getPossibleMarriage())) {
-                        possibleActions.add(new SchnapsenAction(board, playerId, marriageCard, "Play " + marriageCard.getCardName()));
-                        possibleActions.add(new SchnapsenAction(board, playerId, marriageCard.getPossibleMarriage(), "Play " + marriageCard.getPossibleMarriage().getCardName()));
+                        possibleActions.add(new SchnapsenAction(playerId, marriageCard, "Play " + marriageCard.getCardName()));
+                        possibleActions.add(new SchnapsenAction(playerId, marriageCard.getPossibleMarriage(), "Play " + marriageCard.getPossibleMarriage().getCardName()));
                     }
                     else {
                         throw new IllegalStateException("Marriage cards not found after declaring marriage");
@@ -56,10 +62,8 @@ public class SchnapsenAction {
                     if (!board.isTalonClosed() && !board.playingCardPileIsEmpty()) {
                         if (card.isTrumpSuit() && card.getCardValue() == 2) {
                             //exchange trump card Action
-                            possibleActions.add(new SchnapsenAction(board, playerId, true, "Exchange " + card.getCardName() + " with trump card"));
+                            possibleActions.add(new SchnapsenAction(playerId, true, "Exchange " + card.getCardName() + " with trump card"));
                         }
-                        //close talon Action only if not closed already
-                        possibleActions.add(new SchnapsenAction(board, playerId, false, "Close the talon"));
                     }
 
                     if (card.getPossibleMarriage() != null) {
@@ -68,12 +72,16 @@ public class SchnapsenAction {
 
                     if (possibleMarriageCards.contains(card)) {
                         //marriage Action
-                        possibleActions.add(new SchnapsenAction(board, playerId, card, card.getPossibleMarriage(), "Marriage of " + card.getCardName() + " + " + card.getPossibleMarriage().getCardName()));
+                        possibleActions.add(new SchnapsenAction(playerId, card, card.getPossibleMarriage(), "Marriage of " + card.getCardName() + " + " + card.getPossibleMarriage().getCardName()));
                         possibleMarriageCards.remove(card);
                     }
 
                     //play card Action
-                    possibleActions.add(new SchnapsenAction(board, playerId, card, "Play " + card.getCardName()));
+                    possibleActions.add(new SchnapsenAction(playerId, card, "Play " + card.getCardName()));
+                }
+                //close talon Action only if not closed already
+                if(!board.isTalonClosed() &&  !board.playingCardPileIsEmpty()) {
+                    possibleActions.add(new SchnapsenAction(playerId, false, "Close the talon"));
                 }
             }
         } else {
@@ -89,7 +97,7 @@ public class SchnapsenAction {
                     if (card.getSuit() == leadingCard.getSuit()) {
                         suits.add(card);
                         if (card.getCardValue() > leadingCard.getCardValue()) {
-                            possibleActions.add(new SchnapsenAction(board, playerId, card, "Play " + card.getCardName()));
+                            possibleActions.add(new SchnapsenAction(playerId, card, "Play " + card.getCardName()));
                         }
                     }
 
@@ -101,27 +109,27 @@ public class SchnapsenAction {
                 //suit following rule
                 if (possibleActions.isEmpty()) {
                     for(PlayingCard suitCard : suits) {
-                        possibleActions.add(new SchnapsenAction(board, playerId, suitCard, "Play " + suitCard.getCardName()));
+                        possibleActions.add(new SchnapsenAction(playerId, suitCard, "Play " + suitCard.getCardName()));
                     };
                 }
 
                 //trick taking rule if having trump card
                 if (possibleActions.isEmpty()) {
                     for(PlayingCard trumpCard : trumps) {
-                        possibleActions.add(new SchnapsenAction(board, playerId, trumpCard, "Play " + trumpCard.getCardName()));
+                        possibleActions.add(new SchnapsenAction(playerId, trumpCard, "Play " + trumpCard.getCardName()));
                     }
                 }
 
                 //if no rule is taking place, every card can be played as a following card
                 if (possibleActions.isEmpty()) {
                     for(PlayingCard card: playerCards) {
-                        possibleActions.add(new SchnapsenAction(board, playerId, card, "Play " + card.getCardName()));
+                        possibleActions.add(new SchnapsenAction(playerId, card, "Play " + card.getCardName()));
                     }
                 }
             } else {
                 //talon is not closed and pile is not empty, every card can be played
                 for(PlayingCard card: playerCards) {
-                    possibleActions.add(new SchnapsenAction(board, playerId, card, "Play " + card.getCardName()));
+                    possibleActions.add(new SchnapsenAction(playerId, card, "Play " + card.getCardName()));
                 }
             }
 
@@ -131,44 +139,41 @@ public class SchnapsenAction {
         return possibleActions;
     }
 
-    public SchnapsenAction(SchnapsenBoard board, int playerId, Boolean talonOrExchange, String actionMessage) {
-        this.schnapsenBoard = board;
+    public SchnapsenAction(int playerId, Boolean talonOrExchange, String actionMessage) {
         this.playerId = playerId;
         this.talonOrExchange = talonOrExchange;
         this.actionMessage = actionMessage;
     }
 
-    public SchnapsenAction(SchnapsenBoard board, int playerId, PlayingCard playingCard, String actionMessage) {
-        this.schnapsenBoard = board;
+    public SchnapsenAction(int playerId, PlayingCard playingCard, String actionMessage) {
         this.playerId = playerId;
         this.playCard = playingCard;
         this.actionMessage = actionMessage;
     }
 
-    public SchnapsenAction(SchnapsenBoard board, int playerId, PlayingCard marriage1, PlayingCard marriage2, String actionMessage) {
-        this.schnapsenBoard = board;
+    public SchnapsenAction(int playerId, PlayingCard marriage1, PlayingCard marriage2, String actionMessage) {
         this.playerId = playerId;
         this.marriage1 = marriage1;
         this.marriage2 = marriage2;
         this.actionMessage = actionMessage;
     }
 
-    public void doAction() {
+    public void doAction(SchnapsenBoard doBoard) {
         if (playCard != null) {
-            schnapsenBoard.playCard(playerId, playCard);
+            doBoard.playCard(playerId, playCard);
             return;
         }
 
         if (marriage1 != null) {
-            schnapsenBoard.declareMarriage(playerId, marriage1, marriage2);
+            doBoard.declareMarriage(playerId, marriage1, marriage2);
             return;
         }
 
         if (talonOrExchange != null) {
             if (talonOrExchange) {
-                schnapsenBoard.exchangeTrumpCard(playerId);
+                doBoard.exchangeTrumpCard(playerId);
             } else {
-                schnapsenBoard.closeTalon(playerId);
+                doBoard.closeTalon(playerId);
             }
         }
     }
@@ -188,7 +193,7 @@ public class SchnapsenAction {
             return false;
         } else {
             SchnapsenAction other = (SchnapsenAction) obj;
-            return schnapsenBoard.equals(other.schnapsenBoard) &&
+            return //schnapsenBoard.equals(other.schnapsenBoard) &&
                     playerId == other.playerId &&
                     Objects.equals(talonOrExchange, other.talonOrExchange) &&
                     Objects.equals(playCard, other.playCard) &&
@@ -199,6 +204,83 @@ public class SchnapsenAction {
 
     @Override
     public int hashCode() {
-        return Objects.hash(schnapsenBoard, playerId, talonOrExchange, playCard, marriage1, marriage2);
+        return Objects.hash(playerId, talonOrExchange, playCard, marriage1, marriage2);
+    }
+
+    /**
+     * Ordering Actions to first have play card actions in descending values, prioritizing Trump cards,
+     * then showing marriages, trump swaps and lastly close talon actions
+     * @param o action to be ordered
+     * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object.
+     */
+    @Override
+    public int compareTo(SchnapsenAction o) {
+
+        int myType = getOrderPriority();
+        int otherType = o.getOrderPriority();
+
+        if (myType != otherType) {
+            return Integer.compare(myType, otherType);
+        }
+
+        PlayingCard otherPlayingCard = o.playCard;
+        PlayingCard myPlayingCard = this.playCard;
+
+        if(myPlayingCard != null && otherPlayingCard != null) {
+
+            //priority for trump cards
+            if(myPlayingCard.isTrumpSuit() !=  otherPlayingCard.isTrumpSuit())
+            {
+                if(myPlayingCard.isTrumpSuit())
+                {
+                    return -1;
+                }
+                else {
+                    return 1;
+                }
+            }
+
+            //order by suit
+            if(myPlayingCard.getSuit() != otherPlayingCard.getSuit())
+            {
+                return myPlayingCard.getSuit().compareTo(otherPlayingCard.getSuit());
+            }
+
+            //descending order of values
+            return Integer.compare(otherPlayingCard.getCardValue(), myPlayingCard.getCardValue());
+
+        }
+
+        if(this.marriage1 != null && o.marriage1 != null) {
+            boolean myMarriageTrump = this.marriage1.isTrumpSuit();
+            boolean otherMarriageTrump = o.marriage1.isTrumpSuit();
+            if (myMarriageTrump != otherMarriageTrump) {
+                if(myMarriageTrump) {
+                    return -1;
+                } else
+                {
+                    return 1;
+                }
+            }
+
+            return this.marriage1.getSuit().compareTo(o.marriage1.getSuit());
+        }
+
+        // Fallback sort by string
+        return this.toString().compareTo(o.toString());
+    }
+
+    /**
+     * Helper to determine if action has higher ordering priority, lower is higher
+     * @return integer with ordering number
+     */
+    private int getOrderPriority() {
+            if (playCard != null) return 0;       // Play Card
+            if (marriage1 != null) return 1;      // Marriage
+            if (talonOrExchange != null) {
+                if (talonOrExchange) return 2;    // Exchange Trump
+                return 3;                         // Close Talon
+            }
+            return 4; // Fallback
     }
 }
