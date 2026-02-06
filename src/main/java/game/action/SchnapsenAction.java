@@ -20,8 +20,9 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
     private PlayingCard marriage2;
     private String actionMessage;
 
-    public static Set<SchnapsenAction> getPossibleActions(SchnapsenBoard board, int playerId) {
+    public static Set<SchnapsenAction> getPossibleActions(SchnapsenBoard board) {
         Set<SchnapsenAction> possibleActions = new TreeSet<>();
+        int playerId = board.getPlayerTurnId();
 
         //return empty set if game is over (as stated by the engine)
         if(board.isGameOver())

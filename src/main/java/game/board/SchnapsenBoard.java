@@ -6,6 +6,7 @@
 
 package game.board;
 
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -163,6 +164,13 @@ public class SchnapsenBoard {
     private int player0Bummerl = 7;
     private int player1Bummerl = 7;
 
+    //One can set the amount of Bummerl to be played, when creating a board
+    //A Bummerl is given to the losing player of each round.
+    //The game ends when one player has reached the maximum Bummerl amount. (Default 1)
+    private int bummerlMax = 1;
+    private int player0BummerlAmount;
+    private int player1BummerlAmount;
+
     //Score for marriages only gets added if the player has made any tricks
     private int player0MarriageTempScore;
     private int player1MarriageTempScore;
@@ -266,12 +274,25 @@ public class SchnapsenBoard {
 
     }
 
+    /**
+     * Create a board based on an amount of bummerl and a random object
+     * @param random object that manipulates shuffling of the deck
+     * @param bummerlMax states how many bummers the game will last
+     */
+    public SchnapsenBoard(Random random, int bummerlMax) {
+        this.startingPlayer = 0;
+        this.playerTurnId = startingPlayer;
+        this.random = random;
+        this.bummerlMax = bummerlMax;
+        roundInitialisation();
+    }
+
     public SchnapsenBoard(SchnapsenBoard schnapsenBoard) {
         this(schnapsenBoard.player0Cards, schnapsenBoard.player1Cards, schnapsenBoard.playingCardPile, schnapsenBoard.player0Tricks,
                 schnapsenBoard.player1Tricks, schnapsenBoard.startingPlayer, schnapsenBoard.playerTurnId, schnapsenBoard.random, schnapsenBoard.player0MarriageTempScore,
                 schnapsenBoard.player1MarriageTempScore, schnapsenBoard.player0Bummerl, schnapsenBoard.player1Bummerl, schnapsenBoard.player0Score, schnapsenBoard.player1Score,
                 schnapsenBoard.talonClosingPlayerId, schnapsenBoard.talonClosedEnemyScore, schnapsenBoard.talonClosed, schnapsenBoard.leadingCard,
-                schnapsenBoard.trumpCard, schnapsenBoard.trumpSuit,schnapsenBoard.marriageCardDeclared);
+                schnapsenBoard.trumpCard, schnapsenBoard.trumpSuit,schnapsenBoard.marriageCardDeclared, schnapsenBoard.bummerlMax, schnapsenBoard.player0BummerlAmount, schnapsenBoard.player1BummerlAmount);
     }
 
     /**
@@ -296,8 +317,11 @@ public class SchnapsenBoard {
                           boolean talonClosed,
                           PlayingCard leadingCard,
                           PlayingCard trumpCard,
-                          SchnapsenBoard.cardSuits trumpSuit,
-                          PlayingCard marriageCardDeclared
+                          cardSuits trumpSuit,
+                          PlayingCard marriageCardDeclared,
+                          int bummerlMax,
+                          int player0BummerlAmount,
+                          int player1BummerlAmount
 
                           ) {
 
@@ -342,11 +366,29 @@ public class SchnapsenBoard {
             this.playingCardPile.add(foundCard);
         }
 
-        this.player0Tricks = player0Tricks;
-        this.player1Tricks = player1Tricks;
+        for(PlayingCard[] playingCardArray : player0Tricks)
+        {
+            PlayingCard foundCard0 = findCardInPile(newPile, playingCardArray[0]);
+            PlayingCard foundCard1 = findCardInPile(newPile, playingCardArray[1]);
+            foundCard1.setIsTrumpSuit(playingCardArray[0].isTrumpSuit());
+            foundCard0.setIsTrumpSuit(playingCardArray[1].isTrumpSuit());
+            this.player0Tricks.add(new PlayingCard[]{foundCard0, foundCard1});
+        }
+
+        for(PlayingCard[] playingCardArray : player1Tricks)
+        {
+            PlayingCard foundCard0 = findCardInPile(newPile, playingCardArray[0]);
+            PlayingCard foundCard1 = findCardInPile(newPile, playingCardArray[1]);
+            foundCard1.setIsTrumpSuit(playingCardArray[0].isTrumpSuit());
+            foundCard0.setIsTrumpSuit(playingCardArray[1].isTrumpSuit());
+            this.player1Tricks.add(new PlayingCard[]{foundCard0, foundCard1});
+        }
+
         this.startingPlayer = startingPlayer;
         this.playerTurnId = playerTurnId;
-        this.random = random;
+        this.random = new Random(random.nextLong());
+        //TODO adaptable cheating version for testing
+        //this.random = deepCopyRandom(random);
         this.player0MarriageTempScore = player0MarriageTempScore;
         this.player1MarriageTempScore = player1MarriageTempScore;
         this.player0Bummerl = player0Bummerl;
@@ -357,6 +399,9 @@ public class SchnapsenBoard {
         this.talonClosedEnemyScore = talonClosedEnemyScore;
         this.talonClosed = talonClosed;
         this.trumpSuit = trumpSuit;
+        this.bummerlMax = bummerlMax;
+        this.player0BummerlAmount = player0BummerlAmount;
+        this.player1BummerlAmount = player1BummerlAmount;
     }
 
     private PlayingCard findCardInPile(List<PlayingCard> pile, PlayingCard targetCard){
@@ -448,9 +493,10 @@ public class SchnapsenBoard {
                         {
                             throw new IllegalArgumentException("Player has to play one of the declared marriage partners!");
                         }
+                    } else {
+                        leadingCard = card;
+                        playerCards.remove(leadingCard);
                     }
-                    leadingCard = card;
-                    playerCards.remove(leadingCard);
                 } else {
                     cardSuits leadingSuit = leadingCard.getSuit();
                     int trickWinnerId = -1;
@@ -686,8 +732,10 @@ public class SchnapsenBoard {
      * and the non-closing player will get at least 2 Bummerl points no matter the amount of tricks they had.
      * Loosing means that they did not get 66 score points even tough they closed the talon.
      * The last trick scoring rule is not active if the talon was closed
-     *
-     *
+     * <p>
+     * <p>
+     * This method also adds the Bummerl to the loosing player.
+     * If the loosing player had not won any rounds (7 on their score), they receive a "Schneider", which counts as 2 Bummerl.
      */
     private void calculateBummerl()
     {
@@ -774,23 +822,53 @@ public class SchnapsenBoard {
                 }
 
             }
-            if(isGameOver()){
-                if(player0Bummerl <= 0)
-                {
-                    System.out.println("Player 1 won the Bummerl (game)!");
+
+            //check who lost and gets the Bummerl
+            if(isBummerlOver()) {
+                if (player0Bummerl <= 0) {
+                    // System.out.println("Player 1 won the Bummerl (game)!");
+                    if (player1Bummerl == 7) {
+                        player1BummerlAmount += 2;
+                    } else {
+                        player1BummerlAmount++;
+                    }
                 } else {
-                    System.out.println("Player 2 won the Bummerl (game)!");
+                    //   System.out.println("Player 2 won the Bummerl (game)!");
+                    if (player0Bummerl == 7) {
+                        player0BummerlAmount += 2;
+                    } else {
+                        player0BummerlAmount++;
+                    }
                 }
+                resetBummerl();
             }
-            else {
-                System.out.println("Round over! Player 1 has " + player0Bummerl + " points left on the Bummerl!");
-                System.out.println("Round over! Player 2 has " + player1Bummerl + " points left on the Bummerl!");
+
+
+            if(!isGameOver()) {
+               // System.out.println("Round over! Player 1 has " + player0Bummerl + " points left on the Bummerl!");
+               // System.out.println("Round over! Player 2 has " + player1Bummerl + " points left on the Bummerl!");
 
                 //If game is not over yet, the starting player shifts and a new round begins
                 startingPlayer = 1 - startingPlayer;
                 resetRound();
             }
         }
+    }
+
+    /**
+     * This method resets the Bummerl and the corresponding scores
+     */
+    private void resetBummerl() {
+        player0Bummerl = 7;
+        player1Bummerl = 7;
+    }
+
+    /**
+     * Checks if one of the players has reached the Bummerl maximum, and therefore a game over state
+     * @return boolean if the game is over
+     */
+    public boolean isGameOver() {
+        return player0BummerlAmount >= bummerlMax || player1BummerlAmount >= bummerlMax;
     }
 
     /**
@@ -853,7 +931,7 @@ public class SchnapsenBoard {
      * If the overall score of one player is 0 or lower the game is over (counted down from 7)
      * @return boolean that checks if the game is over
      */
-    public boolean isGameOver() {
+    public boolean isBummerlOver() {
         return player0Bummerl <= 0 || player1Bummerl <= 0;
     }
 
@@ -865,16 +943,22 @@ public class SchnapsenBoard {
         String leadCard = "";
         if (leadingCard != null) {
             leadCard = "Leading Card: " + leadingCard + "\n" + "--------------------\n";
+        } else {
+            leadCard = "--------------------\n";
         }
 
         String talonCards = "";
         if(talonClosed) {
-            talonCards = "Talon closed, trump suit: " + switch (trumpSuit) {case SPADES -> "(S)pades"; case HEARTS ->  "(H)earts"; case DIAMONDS ->  "(D)iamonds"; case CLUBS -> "(C)lubs";} + "\n";
+            talonCards = "Talon closed by Player " + (talonClosingPlayerId+1) + ", trump suit: " + switch (trumpSuit) {case SPADES -> "(S)pades"; case HEARTS ->  "(H)earts"; case DIAMONDS ->  "(D)iamonds"; case CLUBS -> "(C)lubs";} + "\n";
         } else if (this.playingCardPile.isEmpty()) {
             talonCards = "Playing pile empty, trump suit: " + switch (trumpSuit) {case SPADES -> "(S)pades"; case HEARTS ->  "(H)earts"; case DIAMONDS ->  "(D)iamonds"; case CLUBS -> "(C)lubs";} + "\n";
         } else {
             talonCards ="Remaining Cards: " + playingCardPile.size() + " Trump Card: " + trumpCard.toString() + "\n";
         }
+
+        String bummerlPlayer0 = "°".repeat(Math.max(0, player0BummerlAmount));
+
+        String bummerlPlayer1 = "°".repeat(Math.max(0, player1BummerlAmount));
 
         String sb =
                 "-------------------\n" +
@@ -888,12 +972,14 @@ public class SchnapsenBoard {
                 "--------------------\n" +
                 leadCard +
                 //"Drawing Pile: " + playingCardPile + "\n" + //-> for testing
-                "--------------------\n" +
+                //"--------------------\n" +
                 "Player 2's Hand: " + player1Cards + " Player 2's Score: " + player1Score + " Player 2's Tricks: " + player1Tricks.stream()
                 .map(Arrays::toString) // Converts each PlayingCard[] to a readable String
                 .collect(Collectors.joining(", ", "[", "]")) + "\n" +
                 "--------------------\n" +
-                "Bummerl Score: Player 1: " + player0Bummerl + ", Player 2: " + player1Bummerl;
+                "Current Bummerl Score: Player 1: " + player0Bummerl + ", Player 2: " + player1Bummerl + "\n" +
+                "--------------------\n" +
+                "Playing up to " + bummerlMax + " Bummerl: Player 1's Bummerl: (" + player0BummerlAmount + ") " + bummerlPlayer0 + ", Player 2's Bummerl: (" + player1BummerlAmount + ") " + bummerlPlayer1;
         return sb;
     }
 
@@ -903,26 +989,48 @@ public class SchnapsenBoard {
 
     /**
      * This method gives a current overview of the players score, for the current round
-     * and the overall Bummerl score. To give the scores an accurate weight they are
-     * divided by the most extreme values:
-     * When having only 1 point left on the Bummerl and winning a 3 Bummerl point game the
-     * value would result in -2. To accustom this to our utility value we add 2 to the Bummerl score, which we subtract from 9 and then divide it by 9
+     * and the overall Bummerl score, as well as the amounts of Bummerl the opposing player has. To give the scores an accurate weight they are
+     * compared with the most extreme values:
+     * <p>
+     * The most extreme value for losing the game in terms of Bummerl is getting a "Schneider", therefore 2 Bummerl when having maxBummerl -1.
+     * e.g. when playing to 5 Bummerl the maximum would be 6, when getting a Schneider at 4.
+     * <p>
+     * When having only 1 point left on the current Bummerl and winning a 3 Bummerl point round the
+     * value would result in -2. To accustom this to our utility value we add 2 to the maximum possible current Bummerl score so we look at 9.
      * <p>
      * To give an insight on the current round played we also look at the most extreme value:
      * Having a score of 65 is not yet game ending. The highest increase in one action that can happen is a marriage of 40.
-     * That is why the current score of the player gets devided by 105.
      * <p>
-     * These scores are than added to show the current standing of a players performance in this game
+     *
+     * These scores are than added to show the current standing of a players performance in this game.
+     * To accurately give each category a weight the current standing in Bummerl will be multiplied by 10, as it has the highest priority.
+     * The current Bummerl's Score will be 0-9
+     * and the round score would be 0.0-0.99 (by dividing through 106 = maximum possible round score + 1)
+     * <p>
+     * A complete example with a game going to 7 Bummerl:
+     * 34.5 -> 3x.x stands for 3 Bummerl on the opposing players side (The higher this number the better)
+     * -> x4.x stands for 9 - the current Bummerls points of the player, so the player has 5 points left to win this Bummerl (The higher this number the better)
+     * -> xx.5 stands for the current rounds score of the player, so the player has a score of 0.5*106= 53 in this round (The higher this number the better)
+     *
      * @param playerId id of the player to check the score
      * @return a double value of the players overall utility score
      */
     public double getUtilityValue(int playerId) {
         if(playerId == 0)
         {
-            return (9-player0Bummerl+2)/9.0d + player0Score/105.0d;
+            double bummerlScore0 = player1BummerlAmount * 10;
+            double currentBummerlScore0 = (9-player0Bummerl);
+            double currentRoundScore0 = player0Score/106.0d;
+
+            return bummerlScore0 + currentBummerlScore0 + currentRoundScore0;
+
         }
         else {
-            return (9-player1Bummerl+2)/9.0d + player1Score/105.0d;
+            double bummerlScore1 = player0BummerlAmount * 10;
+            double currentBummerlScore1 = (9-player1Bummerl);
+            double currentRoundScore1 = player1Score/106.0d;
+
+            return bummerlScore1 + currentBummerlScore1 + currentRoundScore1;
         }
     }
 
@@ -954,6 +1062,27 @@ public class SchnapsenBoard {
                 playingCardPile.add(new PlayingCard(cardSuits.SPADES, cardNames.PlaceHolder, 0));
             }
             playingCardPile.addLast(trumpCard);
+        }
+    }
+
+    /**
+     * Used to create a deep copy of a random object using Serializable
+     * @param original random object to be copied
+     * @return deep copy of random object
+     */
+    private static Random deepCopyRandom(Random original) {
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(original);
+            oos.flush();
+
+            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bis);
+
+            return (Random) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Failed to clone Random Object", e);
         }
     }
 
