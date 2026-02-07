@@ -67,15 +67,18 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
     }
 
     /**
-     * This constructor is used to create a board with hidden information (information for the player only)
-     * to achieve this the board is deep copied and then the information is hidden that would not be accessible for the current player
+     * This constructor is used to create a new game based on a given game.
+     * It can be done either with or without hidden information (information for the player only)
+     * to achieve this the board is deep copied and then the information that would not be accessible for the current player can be hidden
      * @param game the game with full information
      */
-    public Schnapsen(Schnapsen game)
+    public Schnapsen(Schnapsen game, boolean hideInformation)
     {
         //TODO Implement an adaptable cheating version for testing
         SchnapsenBoard newBoard = new SchnapsenBoard(game.schnapsenBoard);
-        newBoard.hideInformation(newBoard.getPlayerTurnId());
+        if(hideInformation) {
+            newBoard.hideInformation(newBoard.getPlayerTurnId());
+        }
         this.schnapsenBoard = newBoard;
         this.actionRecords = new ArrayList<>(game.actionRecords);
     }
@@ -122,7 +125,7 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
 
     @Override
     public Game<SchnapsenAction, SchnapsenBoard> doAction(SchnapsenAction schnapsenAction) {
-        Schnapsen newBoard = new Schnapsen(this);
+        Schnapsen newBoard = new Schnapsen(this, false);
         schnapsenAction.doAction(newBoard.schnapsenBoard);
         newBoard.actionRecords.add(new ActionRecord<SchnapsenAction>(newBoard.getCurrentPlayer(),schnapsenAction));
         return newBoard;
@@ -145,7 +148,7 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
 
     @Override
     public Game<SchnapsenAction, SchnapsenBoard> getGame(int i) {
-        return new Schnapsen(this);
+        return new Schnapsen(this, true);
         //return this;
     }
 
