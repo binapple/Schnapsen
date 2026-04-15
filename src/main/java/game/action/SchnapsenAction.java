@@ -13,11 +13,20 @@ import java.util.*;
 
 public class SchnapsenAction implements Comparable<SchnapsenAction> {
 
+    //This variable is used for distinguishing between the two actions of closing the talon or exchangeing the trump card
     private Boolean talonOrExchange = null;
+
+    //Tracks the players id
     private int playerId;
+
+    //Tracks the card involved in the action
     private PlayingCard playCard;
+
+    //Tracks the cards that are part of the marriage action
     private PlayingCard marriage1;
     private PlayingCard marriage2;
+
+    //States the action in a readable manner
     private String actionMessage;
 
     public static Set<SchnapsenAction> getPossibleActions(SchnapsenBoard board) {
@@ -59,7 +68,10 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
                     throw new IllegalStateException("Marriage card not found after declaring marriage");
                 }
             } else {
+
+
                 for (PlayingCard card : playerCards) {
+                    //if player is leading they may exchange trumps if they have the correct Jack
                     if (!board.isTalonClosed() && !board.playingCardPileIsEmpty()) {
                         if (card.isTrumpSuit() && card.getCardValue() == 2) {
                             //exchange trump card Action
@@ -67,34 +79,38 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
                         }
                     }
 
+                    //keep track of possible Marriage cards for the player
                     if (card.getPossibleMarriage() != null) {
                         possibleMarriageCards.add(card.getPossibleMarriage());
                     }
 
+                    //if both cards are present we can add the marriage action
                     if (possibleMarriageCards.contains(card)) {
                         //marriage Action
                         possibleActions.add(new SchnapsenAction(playerId, card, card.getPossibleMarriage(), "Marriage of " + card.getCardName() + " + " + card.getPossibleMarriage().getCardName()));
                         possibleMarriageCards.remove(card);
                     }
 
-                    //play card Action
+                    //as leading player any card can be played as an action
                     possibleActions.add(new SchnapsenAction(playerId, card, "Play " + card.getCardName()));
                 }
-                //close talon Action only if not closed already
+                //close talon Action only if not closed already and pile is not empty yet
                 if(!board.isTalonClosed() &&  !board.playingCardPileIsEmpty()) {
                     possibleActions.add(new SchnapsenAction(playerId, false, "Close the talon"));
                 }
             }
         } else {
-            //when following player
+            //when following player the available actions change, if the talon is closed or the draw pile is empty
             if (board.isTalonClosed() || board.playingCardPileIsEmpty()) {
 
                 //keep track of trump cards and same suit cards
                 List<PlayingCard> trumps = new ArrayList<>();
                 List<PlayingCard> suits = new ArrayList<>();
 
+                //We check if there are any cards that match the suit of the leading card or the trump suit
                 for(PlayingCard card : playerCards) {
-                    //suit following and trick taking rule
+
+                    //1. Rule: suit following and trick taking rule, these actions can be added here already
                     if (card.getSuit() == leadingCard.getSuit()) {
                         suits.add(card);
                         if (card.getCardValue() > leadingCard.getCardValue()) {
@@ -107,21 +123,21 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
                     }
                 }
 
-                //suit following rule
+                //2. Rule: suit following rule, if no card was bigger than the one played, we still have to follow suit
                 if (possibleActions.isEmpty()) {
                     for(PlayingCard suitCard : suits) {
                         possibleActions.add(new SchnapsenAction(playerId, suitCard, "Play " + suitCard.getCardName()));
                     };
                 }
 
-                //trick taking rule if having trump card
+                //3. Rule: trick taking rule if having trump card, if no card matched the suit we must play any trump card to take the trick
                 if (possibleActions.isEmpty()) {
                     for(PlayingCard trumpCard : trumps) {
                         possibleActions.add(new SchnapsenAction(playerId, trumpCard, "Play " + trumpCard.getCardName()));
                     }
                 }
 
-                //if no rule is taking place, every card can be played as a following card
+                //4. Rule: if no rule is taking place, every card can be played as a following card
                 if (possibleActions.isEmpty()) {
                     for(PlayingCard card: playerCards) {
                         possibleActions.add(new SchnapsenAction(playerId, card, "Play " + card.getCardName()));
@@ -140,18 +156,37 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
         return possibleActions;
     }
 
+    /**
+     * Constructor for exchange and talon closing actions
+     * @param playerId id of player who wants to take the action
+     * @param talonOrExchange boolean true if exchanging trump action, false if closing talon action
+     * @param actionMessage The action's message that is displayed by the engine
+     */
     public SchnapsenAction(int playerId, Boolean talonOrExchange, String actionMessage) {
         this.playerId = playerId;
         this.talonOrExchange = talonOrExchange;
         this.actionMessage = actionMessage;
     }
 
+    /**
+     * Constructor for playing card actions
+     * @param playerId id of player who wants to take the action
+     * @param playingCard PlayingCard to be played on the board
+     * @param actionMessage The action's message that is displayed by the engine
+     */
     public SchnapsenAction(int playerId, PlayingCard playingCard, String actionMessage) {
         this.playerId = playerId;
         this.playCard = playingCard;
         this.actionMessage = actionMessage;
     }
 
+    /**
+     * Constructor for playing card actions
+     * @param playerId id of player who wants to take the action
+     * @param marriage1 one of the PlayingCards of the marriage pair
+     * @param marriage2 the other one of the PlayingCards of the marriage pair
+     * @param actionMessage The action's message that is displayed by the engine
+     */
     public SchnapsenAction(int playerId, PlayingCard marriage1, PlayingCard marriage2, String actionMessage) {
         this.playerId = playerId;
         this.marriage1 = marriage1;
@@ -159,17 +194,25 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
         this.actionMessage = actionMessage;
     }
 
+    /**
+     * This method applies the action to the passed SchnapsenBoard
+     * @param doBoard the board on which the action should take place
+     */
     public void doAction(SchnapsenBoard doBoard) {
+
+        //This action is a "playCard" action
         if (playCard != null) {
             doBoard.playCard(playerId, playCard);
             return;
         }
 
+        //This action is a "declareMarriage" action
         if (marriage1 != null) {
             doBoard.declareMarriage(playerId, marriage1, marriage2);
             return;
         }
 
+        //This action is either an "exchangeTrump" or a "closeTalon" action
         if (talonOrExchange != null) {
             if (talonOrExchange) {
                 doBoard.exchangeTrumpCard(playerId);
@@ -220,6 +263,7 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
         int myType = getOrderPriority();
         int otherType = o.getOrderPriority();
 
+        //If the actions are not of the same priority then the comparison can be returned instantly
         if (myType != otherType) {
             return Integer.compare(myType, otherType);
         }
@@ -252,6 +296,7 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
 
         }
 
+        //Compares marriages to each other prioritising marriages of the trump suit
         if(this.marriage1 != null && o.marriage1 != null) {
             boolean myMarriageTrump = this.marriage1.isTrumpSuit();
             boolean otherMarriageTrump = o.marriage1.isTrumpSuit();

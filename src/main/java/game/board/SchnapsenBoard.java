@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 public class SchnapsenBoard {
 
+    //These enums help in keeping the naming of suits and cards consistent
     public enum cardSuits {
         SPADES,
         HEARTS,
@@ -148,14 +149,19 @@ public class SchnapsenBoard {
         }
     }
 
+    //Random object that controls the shuffling of cards
     private Random random;
+
+    //These lists track the drafting pile and the players cards
     private LinkedList<PlayingCard> playingCardPile = new LinkedList<>();
     private List<PlayingCard> player0Cards = new ArrayList<>();
     private List<PlayingCard> player1Cards = new ArrayList<>();
 
+    //In this List the Tricks taken by the player are stored in pairs
     private List<PlayingCard[]> player0Tricks = new ArrayList<>();
     private List<PlayingCard[]> player1Tricks = new ArrayList<>();
 
+    //This is the current round score (when on player reaches 66, the round is over)
     private int player0Score;
     private int player1Score;
 
@@ -172,24 +178,41 @@ public class SchnapsenBoard {
     private int player1BummerlAmount;
 
     //Score for marriages only gets added if the player has made any tricks
+    //These variables help in tracking if there are any marriage points not yet scored
     private int player0MarriageTempScore;
     private int player1MarriageTempScore;
+
+    //This variable checks if a marriage was declared, therefore one would have to play one of the two marriage partners
     private PlayingCard marriageCardDeclared;
 
+    //Keep track of all declared marriages by the players this round -> this Information is public
+    private List<PlayingCard> player0Marriages = new ArrayList<>();
+    private List<PlayingCard> player1Marriages = new ArrayList<>();
+
+    //These variables help in the talon closing logic of the board
+    //The id of the closing player is tracked as well as the score of the non-closing player
+    //This score has an impact on the amount of points deducted of the current Bummerl, after the round is over
     private boolean talonClosed = false;
     private int talonClosingPlayerId = -1;
     private int talonClosedEnemyScore;
 
+    //These variables help in tracking the trump card and the trump suit
     private PlayingCard trumpCard;
     private cardSuits trumpSuit;
 
+    //Keep track of the old trump card in case of an "exchange"
+    private PlayingCard oldTrumpCard;
+
+    //When one player plays a card it is no longer in their hand, but untill the other player plays their card and the trick is resovled
+    //the lead card is tracked in this variable
     private PlayingCard leadingCard;
 
+    //These variables help in tracking whose turn it is to be starting a round and which players turn it is
     private int startingPlayer;
     private int playerTurnId;
 
     /**
-     * Creating the playing cards and adding them to the playing card pile
+     * Creating the playing cards and adding them to the playing card pile with the provided enums
      */
     private void createCards()
     {
@@ -257,8 +280,7 @@ public class SchnapsenBoard {
      * Initialize the SchnapsenBoard with a random seed
      */
     public SchnapsenBoard() {
-        //TODO: Remove test seed
-        this(new Random(0));
+        this(new Random());
     }
 
     /**
@@ -275,9 +297,9 @@ public class SchnapsenBoard {
     }
 
     /**
-     * Create a board based on an amount of bummerl and a random object
+     * Create a board based on an amount of Bummerl and a random object
      * @param random object that manipulates shuffling of the deck
-     * @param bummerlMax states how many bummers the game will last
+     * @param bummerlMax states how many Bummerl the game will last
      */
     public SchnapsenBoard(Random random, int bummerlMax) {
         this.startingPlayer = 0;
@@ -287,13 +309,33 @@ public class SchnapsenBoard {
         roundInitialisation();
     }
 
+    /**
+     * This constructor is used for deep copying the given Schnapsen Board
+     * @param schnapsenBoard the Schnapsen Board to be deeply copied into the new one
+     */
     public SchnapsenBoard(SchnapsenBoard schnapsenBoard) {
         this(schnapsenBoard.player0Cards, schnapsenBoard.player1Cards, schnapsenBoard.playingCardPile, schnapsenBoard.player0Tricks,
                 schnapsenBoard.player1Tricks, schnapsenBoard.startingPlayer, schnapsenBoard.playerTurnId, schnapsenBoard.random, schnapsenBoard.player0MarriageTempScore,
                 schnapsenBoard.player1MarriageTempScore, schnapsenBoard.player0Bummerl, schnapsenBoard.player1Bummerl, schnapsenBoard.player0Score, schnapsenBoard.player1Score,
                 schnapsenBoard.talonClosingPlayerId, schnapsenBoard.talonClosedEnemyScore, schnapsenBoard.talonClosed, schnapsenBoard.leadingCard,
-                schnapsenBoard.trumpCard, schnapsenBoard.trumpSuit,schnapsenBoard.marriageCardDeclared, schnapsenBoard.bummerlMax, schnapsenBoard.player0BummerlAmount, schnapsenBoard.player1BummerlAmount);
+                schnapsenBoard.trumpCard, schnapsenBoard.trumpSuit,schnapsenBoard.marriageCardDeclared, schnapsenBoard.bummerlMax, schnapsenBoard.player0BummerlAmount, schnapsenBoard.player1BummerlAmount,
+                schnapsenBoard.player0Marriages, schnapsenBoard.player1Marriages, schnapsenBoard.oldTrumpCard);
     }
+
+
+    /**
+     * This consturctor is used to fill in "hidden" Information to a new deep copied Schnapsen Board, while keeping all the other boards information
+     * @param otherBoard the board which information will be used by the new board
+     * @param player0Cards the player 0 cards to be used by the new board
+     * @param player1Cards the player 1 cards to be used by the new board
+     * @param playingCardPile the playing card pile to be used by the new board
+     *//*
+    public SchnapsenBoard(SchnapsenBoard otherBoard, List<PlayingCard> player0Cards, List<PlayingCard> player1Cards, LinkedList<PlayingCard> playingCardPile) {
+        this(player0Cards, player1Cards, playingCardPile, otherBoard.player0Tricks, otherBoard.player1Tricks, otherBoard.startingPlayer, otherBoard.playerTurnId, otherBoard.random,
+                otherBoard.player0MarriageTempScore, otherBoard.player1MarriageTempScore, otherBoard.player0Bummerl, otherBoard.player1Bummerl, otherBoard.player0Score, otherBoard.player1Score,
+                otherBoard.talonClosingPlayerId, otherBoard.talonClosedEnemyScore, otherBoard.talonClosed, otherBoard.leadingCard, otherBoard.trumpCard, otherBoard.trumpSuit,
+                otherBoard. marriageCardDeclared, otherBoard.bummerlMax, otherBoard.player0BummerlAmount, otherBoard.player1BummerlAmount, otherBoard.player0Marriages, otherBoard.player1Marriages, otherBoard.oldTrumpCard);
+    }*/
 
     /**
      * Creates a deep copy of a Schnapsen board based on the inputs given, the new board also features new Cards
@@ -321,7 +363,10 @@ public class SchnapsenBoard {
                           PlayingCard marriageCardDeclared,
                           int bummerlMax,
                           int player0BummerlAmount,
-                          int player1BummerlAmount
+                          int player1BummerlAmount,
+                          List<PlayingCard> player0Marriages,
+                          List<PlayingCard> player1Marriages,
+                          PlayingCard oldTrumpCard
 
                           ) {
 
@@ -340,6 +385,12 @@ public class SchnapsenBoard {
             this.marriageCardDeclared = findCardInPile(newPile, marriageCardDeclared);
             this.marriageCardDeclared.setIsTrumpSuit(marriageCardDeclared.isTrumpSuit());
         }
+
+        if(oldTrumpCard != null){
+            this.oldTrumpCard = findCardInPile(newPile, oldTrumpCard);
+            this.oldTrumpCard.setIsTrumpSuit(true);
+        }
+
         if (leadingCard != null){
             this.leadingCard = findCardInPile(newPile, leadingCard);
             this.leadingCard.setIsTrumpSuit(leadingCard.isTrumpSuit());
@@ -384,11 +435,25 @@ public class SchnapsenBoard {
             this.player1Tricks.add(new PlayingCard[]{foundCard0, foundCard1});
         }
 
+        for(PlayingCard card : player0Marriages)
+        {
+            PlayingCard foundCard = findCardInPile(newPile, card);
+            foundCard.setIsTrumpSuit(card.isTrumpSuit());
+            this.player0Marriages.add(card);
+        }
+
+        for(PlayingCard card : player1Marriages)
+        {
+            PlayingCard foundCard = findCardInPile(newPile, card);
+            foundCard.setIsTrumpSuit(card.isTrumpSuit());
+            this.player1Marriages.add(foundCard);
+        }
+
+
+
         this.startingPlayer = startingPlayer;
         this.playerTurnId = playerTurnId;
         this.random = new Random(random.nextLong());
-        //TODO adaptable cheating version for testing
-        //this.random = deepCopyRandom(random);
         this.player0MarriageTempScore = player0MarriageTempScore;
         this.player1MarriageTempScore = player1MarriageTempScore;
         this.player0Bummerl = player0Bummerl;
@@ -404,6 +469,12 @@ public class SchnapsenBoard {
         this.player1BummerlAmount = player1BummerlAmount;
     }
 
+    /**
+     * helper method to get the first card equal to the specified card from a pile
+     * @param pile the playing card pile to be searched
+     * @param targetCard the card to be found
+     * @return PlayingCard matching the search card from the pile
+     */
     private PlayingCard findCardInPile(List<PlayingCard> pile, PlayingCard targetCard){
         if(targetCard.getCardName() == cardNames.PlaceHolder) {
             return new PlayingCard(cardSuits.SPADES,cardNames.PlaceHolder,0);
@@ -461,15 +532,16 @@ public class SchnapsenBoard {
     }
 
     /**
-     * Player plays a card on the board, logic for who takes the trick if the played card is not the leading card
+     * Player plays a card on the board, includes logic for who takes the trick if the played card is not the leading card
      * <p>
      * If the playing card pile is empty or the talon was closed,
      * the following card has to have the same color of the leading card and one is obliged to take the trick if possible.
+     * These rules are enforced by throwing exceptions if broken
      * <p>
      * Trick is scored and added to the tricks taken pile of the player in the end.
      *
      * @param playerId id of player playing the card
-     * @param card     the card the player wants to play
+     * @param card the card the player wants to play
      */
     public void playCard(int playerId, PlayingCard card) {
        if (playerTurnId == playerId) {
@@ -494,19 +566,23 @@ public class SchnapsenBoard {
                             throw new IllegalArgumentException("Player has to play one of the declared marriage partners!");
                         }
                     } else {
+                        //If no marriage was declared, the leading player can play any card of their choice
                         leadingCard = card;
                         playerCards.remove(leadingCard);
                     }
                 } else {
+                    //the non-leading player may have restrictions on which cards to play based on the status of the talon/drawing pile
                     cardSuits leadingSuit = leadingCard.getSuit();
                     int trickWinnerId = -1;
                     if (talonClosed || playingCardPile.isEmpty()) {
+                        //the player has to follow the leading cards suit if possible
                         if (card.getSuit() != leadingSuit) {
                             for (PlayingCard playingCard : playerCards) {
                                 if (playingCard.getSuit() == leadingSuit) {
                                     throw new IllegalArgumentException("Player has to follow leading suit");
                                 }
                             }
+                            //if not possible they are obliged to play a trump card
                             if (card.isTrumpSuit()) {
                                 trickWinnerId = playerId;
                             } else {
@@ -515,9 +591,11 @@ public class SchnapsenBoard {
                                         throw new IllegalArgumentException("Player has to play trump if they can not follow the suit");
                                     }
                                 }
+                                //if suit is not matching and trump cards are not available the trick goes to the leading player
                                 trickWinnerId = 1 - playerId;
                             }
                         } else {
+                            //When following leading suit the card must take the trick if possible
                             if (card.getCardValue() > leadingCard.getCardValue()) {
                                 trickWinnerId = playerId;
                             } else {
@@ -532,6 +610,7 @@ public class SchnapsenBoard {
                             }
                         }
                     } else {
+                        //If the talon is not closed there are no restrictions on which cards can be played
                         if (card.getSuit() != leadingSuit) {
                             if (card.isTrumpSuit()) {
                                 trickWinnerId = playerId;
@@ -547,6 +626,8 @@ public class SchnapsenBoard {
                         }
                     }
 
+                    //Scoring logic adds current tricks points to the round score
+                    // (if marriage score was not yet added it is added after the first trick taken by the player)
                     if (trickWinnerId == 0) {
                         player0Tricks.add(new PlayingCard[]{card,leadingCard});
                         player0Score += card.getCardValue() + leadingCard.getCardValue();
@@ -568,21 +649,24 @@ public class SchnapsenBoard {
                             passCards(1,1);
                         }
                     }
+
+                    //the following players card is still in their hand, we remove it and set the leading card to null
                     playerCards.remove(card);
                     leadingCard = null;
 
-                    //Winning player gets to play the leading card
+                    //The winning player gets to be the leading player in the next trick
                     playerTurnId = trickWinnerId;
 
-                    //Board checks if round is over
+                    //the Board checks if round is over, if so it calculates who gets a Bummerl
                     if (isRoundOver()){
                         calculateBummerl();
                     }
 
+                    //everything is set for the next trick, therefore return
                     return;
                 }
 
-                //player turn shifts to player that has not yet played a card
+                //the player turn shifts to player that has not yet played a card
                 playerTurnId = 1 - playerTurnId;
 
             } else throw new IllegalArgumentException("Card not in players hand!");
@@ -590,44 +674,53 @@ public class SchnapsenBoard {
     }
 
     /**
-     * Leading players can trade the Jack of the trump suit with the trump card.
+     * Leading players can trade the Jack of the trump suit with the trump card, if the talon is not closed
      *
      * @param playerId id of the player to make the exchange
      */
     public void exchangeTrumpCard(int playerId) {
 
-        if (playerId == playerTurnId && leadingCard == null) {
-            List<PlayingCard> playerCards;
-            if (playerId == 0) {
-                playerCards = player0Cards;
-            } else {
-                playerCards = player1Cards;
-            }
-
-            cardNames jackName = switch (trumpSuit) {
-                case SPADES -> cardNames.JackOfSpades;
-                case HEARTS -> cardNames.JackOfHearts;
-                case DIAMONDS -> cardNames.JackOfDiamonds;
-                case CLUBS -> cardNames.JackOfClubs;
-            };
-
-            PlayingCard cardSwitch = null;
-            for (PlayingCard playingCard : playerCards) {
-                if (playingCard.getCardName().equals(jackName)) {
-                    cardSwitch = trumpCard;
-                    trumpCard = playingCard;
-                    break;
+        if(!talonClosed) {
+            //We check if the player is allowed to make a change (only when they are leading, so the leadingCard must be null)
+            if (playerId == playerTurnId && leadingCard == null) {
+                List<PlayingCard> playerCards;
+                if (playerId == 0) {
+                    playerCards = player0Cards;
+                } else {
+                    playerCards = player1Cards;
                 }
+
+                //This logic checks if the player has the correct Jack in their hand
+                cardNames jackName = switch (trumpSuit) {
+                    case SPADES -> cardNames.JackOfSpades;
+                    case HEARTS -> cardNames.JackOfHearts;
+                    case DIAMONDS -> cardNames.JackOfDiamonds;
+                    case CLUBS -> cardNames.JackOfClubs;
+                };
+
+                PlayingCard cardSwitch = null;
+                for (PlayingCard playingCard : playerCards) {
+                    if (playingCard.getCardName().equals(jackName)) {
+                        cardSwitch = trumpCard;
+                        trumpCard = playingCard;
+                        break;
+                    }
+                }
+                if (cardSwitch != null) {
+                    oldTrumpCard = cardSwitch;
+                    playerCards.remove(trumpCard);
+                    playerCards.add(cardSwitch);
+                    playingCardPile.remove(cardSwitch);
+                    playingCardPile.addLast(trumpCard);
+                } else {
+                    throw new IllegalStateException("Player can only swap trump if they have the Jack in the trump suit!");
+                }
+
+            } else {
+                throw new IllegalStateException("Player can only swap trump card if they are the leading player");
             }
-            if(cardSwitch != null) {
-                playerCards.remove(trumpCard);
-                playerCards.add(cardSwitch);
-                playingCardPile.remove(cardSwitch);
-                playingCardPile.addLast(trumpCard);
-            }
-            
         } else {
-            throw new IllegalStateException("Player can only swap Trump Card if they are the leading player");
+            throw new IllegalStateException("Player can only exchange the trump card if the talon is not closed");
         }
     }
 
@@ -673,12 +766,18 @@ public class SchnapsenBoard {
                     //marriage declared storing marriage Card for action restriction
                     marriageCardDeclared = marriageCard1;
 
+                    //After a marriage declaration it is possible that the round is instantly over
+                    //if not we add the newly shown marriage as public information in the players marriage list
                     if (playerId == 0) {
                         if (player0Score != 0) {
                             player0Score += tempScore;
                             //Board checks if round is over
                             if (isRoundOver()){
                                 calculateBummerl();
+                            } else {
+                                //storing marriage cards as public information
+                                player0Marriages.add(marriageCard1);
+                                player0Marriages.add(marriageCard2);
                             }
                         } else {
                             player0MarriageTempScore = tempScore;
@@ -689,6 +788,10 @@ public class SchnapsenBoard {
                             //Board checks if round is over
                             if (isRoundOver()){
                                 calculateBummerl();
+                            } else {
+                                //storing marriage cards as public information
+                                player1Marriages.add(marriageCard1);
+                                player1Marriages.add(marriageCard2);
                             }
                         } else {
                             player1MarriageTempScore = tempScore;
@@ -706,6 +809,7 @@ public class SchnapsenBoard {
      * @param playerId id of player to close the talon
      */
     public void closeTalon(int playerId) {
+        //We got to keep track of the current score of the non-closing player for the end of round Bummerl calculation
         if(playerTurnId == playerId && leadingCard == null) {
             talonClosed = true;
             talonClosingPlayerId = playerId;
@@ -719,8 +823,8 @@ public class SchnapsenBoard {
     }
 
     /**
-     * The Bummerl scoring is done by checking the score points of the loosing player when the round is over:
-     * If the loosing player has at least 33 score points in the round the winning player will receive 1 Bummerl point,
+     * The Bummerl scoring is done by checking the score points of the losing player when the round is over:
+     * If the losing player has at least 33 score points in the round the winning player will receive 1 Bummerl point,
      * if they managed to get at least 1 trick the winning player will receive 2 Bummerl points,
      * if they did not get any tricks the winning player receives 3 Bummerl points.
      * <p>
@@ -730,17 +834,18 @@ public class SchnapsenBoard {
      * but the score the non closing player receives during the "closing" are not counted.
      * If they loosed after closing, all points they would receive when winning are given to the non-closing player
      * and the non-closing player will get at least 2 Bummerl points no matter the amount of tricks they had.
-     * Loosing means that they did not get 66 score points even tough they closed the talon.
+     * losing means that they did not get 66 score points even tough they closed the talon.
      * The last trick scoring rule is not active if the talon was closed
      * <p>
      * <p>
-     * This method also adds the Bummerl to the loosing player.
-     * If the loosing player had not won any rounds (7 on their score), they receive a "Schneider", which counts as 2 Bummerl.
+     * This method also adds the Bummerl to the losing player.
+     * If the losing player had not won any rounds (7 on their score), they receive a "Schneider", which counts as 2 Bummerl.
      */
     private void calculateBummerl()
     {
         if(isRoundOver() && !isGameOver())
         {
+            //If the talon was closed the scoring changes accordingly
             if(talonClosed)
             {
                 if(talonClosingPlayerId == 0)
@@ -813,6 +918,8 @@ public class SchnapsenBoard {
                         player0Bummerl = player0Bummerl-1;
                     }
                 } else {
+                    //This is the special case that no one got to score 66 points
+                    //Then it is checked who won the last trick (therefore whose turn would be next to start a new trick)
                     if(playerTurnId == 0)
                     {
                         player0Bummerl = player0Bummerl-1;
@@ -823,31 +930,28 @@ public class SchnapsenBoard {
 
             }
 
-            //check who lost and gets the Bummerl
+            //check who lost and gets the Bummerl if it is over already
+            //If the losing player did not manage to score any points in this Bummerl they get two amounts of Bummerl = "Schneider"
             if(isBummerlOver()) {
                 if (player0Bummerl <= 0) {
-                    // System.out.println("Player 1 won the Bummerl (game)!");
                     if (player1Bummerl == 7) {
                         player1BummerlAmount += 2;
                     } else {
                         player1BummerlAmount++;
                     }
                 } else {
-                    //   System.out.println("Player 2 won the Bummerl (game)!");
                     if (player0Bummerl == 7) {
                         player0BummerlAmount += 2;
                     } else {
                         player0BummerlAmount++;
                     }
                 }
+                //We reset the game board to start a fresh Bummerl from scratch
                 resetBummerl();
             }
 
 
             if(!isGameOver()) {
-               // System.out.println("Round over! Player 1 has " + player0Bummerl + " points left on the Bummerl!");
-               // System.out.println("Round over! Player 2 has " + player1Bummerl + " points left on the Bummerl!");
-
                 //If game is not over yet, the starting player shifts and a new round begins
                 startingPlayer = 1 - startingPlayer;
                 resetRound();
@@ -907,6 +1011,10 @@ public class SchnapsenBoard {
             player1MarriageTempScore = 0;
             marriageCardDeclared = null;
 
+            //resetting tracked marriage cards
+            player0Marriages.clear();
+            player1Marriages.clear();
+
             //resetting talon logic
             talonClosed = false;
             talonClosingPlayerId = -1;
@@ -915,6 +1023,7 @@ public class SchnapsenBoard {
             //resetting trumps
             trumpCard = null;
             trumpSuit = null;
+            oldTrumpCard = null;
 
             //resetting leading card
             leadingCard = null;
@@ -928,7 +1037,7 @@ public class SchnapsenBoard {
     }
 
     /**
-     * If the overall score of one player is 0 or lower the game is over (counted down from 7)
+     * If the overall score of one player is 0 or lower the current Bummerl is over (counted down from 7)
      * @return boolean that checks if the game is over
      */
     public boolean isBummerlOver() {
@@ -949,7 +1058,7 @@ public class SchnapsenBoard {
 
         String talonCards = "";
         if(talonClosed) {
-            talonCards = "Talon closed by Player " + (talonClosingPlayerId+1) + ", trump suit: " + switch (trumpSuit) {case SPADES -> "(S)pades"; case HEARTS ->  "(H)earts"; case DIAMONDS ->  "(D)iamonds"; case CLUBS -> "(C)lubs";} + "\n";
+            talonCards = "Talon closed by Player " + (talonClosingPlayerId) + ", trump suit: " + switch (trumpSuit) {case SPADES -> "(S)pades"; case HEARTS ->  "(H)earts"; case DIAMONDS ->  "(D)iamonds"; case CLUBS -> "(C)lubs";} + "\n";
         } else if (this.playingCardPile.isEmpty()) {
             talonCards = "Playing pile empty, trump suit: " + switch (trumpSuit) {case SPADES -> "(S)pades"; case HEARTS ->  "(H)earts"; case DIAMONDS ->  "(D)iamonds"; case CLUBS -> "(C)lubs";} + "\n";
         } else {
@@ -964,7 +1073,7 @@ public class SchnapsenBoard {
                 "-------------------\n" +
                 ".... SCHNAPSEN ´´´´\n" +
                 "-------------------\n" +
-                "Player 1's Hand: " + player0Cards + " Player 1's Score: " + player0Score + " Player 1's Tricks: " + player0Tricks.stream()
+                "Player 0's Hand: " + player0Cards + " Player 0's Score: " + player0Score + " Player 0's Tricks: " + player0Tricks.stream()
                         .map(Arrays::toString) // Converts each PlayingCard[] to a readable String
                         .collect(Collectors.joining(", ", "[", "]")) + "\n" +
                 "--------------------\n" +
@@ -973,23 +1082,27 @@ public class SchnapsenBoard {
                 leadCard +
                 //"Drawing Pile: " + playingCardPile + "\n" + //-> for testing
                 //"--------------------\n" +
-                "Player 2's Hand: " + player1Cards + " Player 2's Score: " + player1Score + " Player 2's Tricks: " + player1Tricks.stream()
+                "Player 1's Hand: " + player1Cards + " Player 1's Score: " + player1Score + " Player 1's Tricks: " + player1Tricks.stream()
                 .map(Arrays::toString) // Converts each PlayingCard[] to a readable String
                 .collect(Collectors.joining(", ", "[", "]")) + "\n" +
                 "--------------------\n" +
-                "Current Bummerl Score: Player 1: " + player0Bummerl + ", Player 2: " + player1Bummerl + "\n" +
+                "Current Bummerl Score: Player 0: " + player0Bummerl + ", Player 1: " + player1Bummerl + "\n" +
                 "--------------------\n" +
-                "Playing up to " + bummerlMax + " Bummerl: Player 1's Bummerl: (" + player0BummerlAmount + ") " + bummerlPlayer0 + ", Player 2's Bummerl: (" + player1BummerlAmount + ") " + bummerlPlayer1;
+                "Playing up to " + bummerlMax + " Bummerl: Player 0's Bummerl: (" + player0BummerlAmount + ") " + bummerlPlayer0 + ", Player 1's Bummerl: (" + player1BummerlAmount + ") " + bummerlPlayer1;
         return sb;
     }
 
+    /**
+     * This method returns the player id who has the current turn on this board
+     * @return playerId who has the turn
+     */
     public int getPlayerTurnId() {
         return playerTurnId;
     }
 
     /**
-     * This method gives a current overview of the players score, for the current round
-     * and the overall Bummerl score, as well as the amounts of Bummerl the opposing player has. To give the scores an accurate weight they are
+     * This method gives a current overview of the players overall score and how good they are faring in the game in total, for the current round
+     * the overall Bummerl score, as well as the amounts of Bummerl the opposing player has. To give the scores an accurate weight they are
      * compared with the most extreme values:
      * <p>
      * The most extreme value for losing the game in terms of Bummerl is getting a "Schneider", therefore 2 Bummerl when having maxBummerl -1.
@@ -1037,7 +1150,8 @@ public class SchnapsenBoard {
     /**
      * This method strips all information of the game that is not tied to the player.
      * This includes all the cards in the drawing pile (except the trump card)
-     * and the cards in the opposing players hand
+     * and the cards in the opposing players hand.
+     * The removed cards are replaced by a placeholder card
      */
     public void hideInformation(int playerId) {
         if (playerId == 0) {
@@ -1066,26 +1180,9 @@ public class SchnapsenBoard {
     }
 
     /**
-     * Used to create a deep copy of a random object using Serializable
-     * @param original random object to be copied
-     * @return deep copy of random object
+     * Returns the cards of player 1 if it is their turn
+     * @return List of PlayingCards, empty if not the turn of player 1
      */
-    private static Random deepCopyRandom(Random original) {
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(original);
-            oos.flush();
-
-            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-            ObjectInputStream ois = new ObjectInputStream(bis);
-
-            return (Random) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("Failed to clone Random Object", e);
-        }
-    }
-
     public List<PlayingCard> getPlayer1Cards() {
         if(this.getPlayerTurnId()== 1)
             return player1Cards;
@@ -1093,6 +1190,10 @@ public class SchnapsenBoard {
             return new ArrayList<>();
     }
 
+    /**
+     * Returns the cards of player 0 if it is their turn
+     * @return List of PlayingCards, empty if not the turn of player 0
+     */
     public List<PlayingCard> getPlayer0Cards() {
         if(this.getPlayerTurnId()== 0)
             return player0Cards;
@@ -1100,32 +1201,150 @@ public class SchnapsenBoard {
             return new ArrayList<>();
     }
 
+    /**
+     * Returns the leading card
+     * @return PlayingCard of the current leading card, can be null if no card is lead
+     */
     public PlayingCard getLeadingCard() {
         return leadingCard;
     }
 
+    /**
+     * Returns the current rounds trumpCard
+     * @return PlayingCard the present trump card of the round
+     */
     public PlayingCard getTrumpCard() {
         return trumpCard;
     }
 
+    /**
+     * Information if the talon is closed in this round, therefore no more cards can be drawn and the rules are changed to:
+     * Must follow suit and must take trick rules
+     * @return true if talon has been close this round
+     */
     public boolean isTalonClosed() {
         return talonClosed;
     }
 
+    /**
+     * Information if the playing pile is empty, therefore no more cards can be drawn and the rules are changed to:
+     * Must follow suit and must take trick rules
+     * @return true if pile is empty
+     */
     public boolean playingCardPileIsEmpty()
     {
         return playingCardPile.isEmpty();
     }
 
+    /**
+     * Information on how many cards are left in the drawing pile
+     * @return a number of cards left in drawing pile
+     */
+    public int playingCardsLeftInPile() {
+        return playingCardPile.size();
+    }
+
+    /**
+     * Information if currently a marriage card has been declared
+     * @return PlayingCard of the marriage card declared, returns null if no declaration was made
+     */
     public PlayingCard getMarriageCardDeclared() {
         return marriageCardDeclared;
     }
 
+    /**
+     * This returns a list of the tricks the player 0 has made in pairs of two
+     * @return PlayingCard list of tricks taken by player 0
+     */
     public List<PlayingCard[]> getPlayer0Tricks() {
         return player0Tricks;
     }
 
+    /**
+     * This returns a list of the tricks the player 1 has made in pairs of two
+     * @return PlayingCard list of tricks taken by player 1
+     */
     public List<PlayingCard[]> getPlayer1Tricks() {
         return player1Tricks;
+    }
+
+    /**
+     * This returns a list of marriages the player 1 has declared
+     * @return The marriages player 1 has declared in form of a List of PlayingCards
+     */
+    public List<PlayingCard> getPlayer1Marriages() {
+        return player1Marriages;
+    }
+
+    /**
+     * This returns a list of marriages the player 0 has declared
+     * @return The marriages player 0 has declared in form of a List of PlayingCards
+     */
+    public List<PlayingCard> getPlayer0Marriages() {
+        return player0Marriages;
+    }
+
+    /**
+     * This returns the old PlayingCard if there has been a trump exchange
+     * @return the old trump card as a PlayingCard that has been exchanged for the new one
+     */
+    public PlayingCard getOldTrumpCard() {
+        return oldTrumpCard;
+    }
+
+    /**
+     * Returns the score of the current round for player 0
+     * @return integer representing current rounds score
+     */
+    public int getPlayer0Score() {
+        return player0Score;
+    }
+
+    /**
+     * Returns the score of the current round for player 1
+     * @return integer representing current rounds score
+     */
+    public int getPlayer1Score() {
+        return player1Score;
+    }
+
+    /**
+     * Returns the current Bummerl score of the current round for player 0
+     * @return integer representing current Bummerl score
+     */
+    public int getPlayer0Bummerl() {
+        return player0Bummerl;
+    }
+
+    /**
+     * Returns the current Bummerl score of the current round for player 1
+     * @return integer representing current Bummerl score
+     */
+    public int getPlayer1Bummerl() {
+        return player1Bummerl;
+    }
+
+    /**
+     * Returns the amount of Bummerl one player needs to lose the game
+     * @return integer representing the Bummerl max of this game
+     */
+    public int getBummerlMax() {
+        return bummerlMax;
+    }
+
+    /**
+     * Returns the amount of Bummerl that player 0 has lost
+     * @return integer representing the amount of lost Bummerl
+     */
+    public int getPlayer0BummerlAmount() {
+        return player0BummerlAmount;
+    }
+
+    /**
+     * Returns the amount of Bummerl that player 1 has lost
+     * @return integer representing the amount of lost Bummerl
+     */
+    public int getPlayer1BummerlAmount() {
+        return player1BummerlAmount;
     }
 }

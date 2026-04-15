@@ -9,7 +9,6 @@ package game;
 import at.ac.tuwien.ifs.sge.game.ActionRecord;
 import at.ac.tuwien.ifs.sge.game.Game;
 import game.action.SchnapsenAction;
-import game.board.PlayingCard;
 import game.board.SchnapsenBoard;
 
 import java.util.*;
@@ -20,8 +19,7 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
     List<ActionRecord<SchnapsenAction>> actionRecords;
 
     public Schnapsen() {
-        //TODO: Remove seed used for testing
-        this (new SchnapsenBoard(new Random(0)));
+        this (new SchnapsenBoard(new Random()));
     }
 
     /**
@@ -35,9 +33,13 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
 
     /**
      * Constructor called by Game Engine
-     * In Schnapsen we only have 2 players, that is why we call our default constructor
+     * This constructor checks if the -b option of the Strategy Game Engine's command was used
+     * If so we use the first number to set to how many Bummerl the game will be played
+     * The second number split by ; will be used to seed the random object
+     * <p>
+     * It is possible to only pass one number which states the amount of Bummerl, the seed will then be randomized
      *
-     * @param stringBoard string of board
+     * @param stringBoard string passed by the engine when using -b option
      * @param numberOfPlayers number of players
      */
     public Schnapsen(String stringBoard, int numberOfPlayers)
@@ -51,8 +53,7 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
                     int seed = Integer.parseInt(params[1]);
                     this.schnapsenBoard = new SchnapsenBoard(new Random(seed), bummerlCount);
                 } else {
-                    //TODO remove Test seed
-                    this.schnapsenBoard = new SchnapsenBoard(new Random(0), bummerlCount);
+                    this.schnapsenBoard = new SchnapsenBoard(new Random(), bummerlCount);
                 }
                 this.actionRecords = new ArrayList<>();
             } else {
@@ -71,10 +72,10 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
      * It can be done either with or without hidden information (information for the player only)
      * to achieve this the board is deep copied and then the information that would not be accessible for the current player can be hidden
      * @param game the game with full information
+     * @param hideInformation a boolean which decides if the information should be hidden
      */
     public Schnapsen(Schnapsen game, boolean hideInformation)
     {
-        //TODO Implement an adaptable cheating version for testing
         SchnapsenBoard newBoard = new SchnapsenBoard(game.schnapsenBoard);
         if(hideInformation) {
             newBoard.hideInformation(newBoard.getPlayerTurnId());
@@ -120,14 +121,15 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
 
     @Override
     public SchnapsenBoard getBoard() {
-        return new SchnapsenBoard(this.schnapsenBoard);
+        return schnapsenBoard;
     }
 
     @Override
     public Game<SchnapsenAction, SchnapsenBoard> doAction(SchnapsenAction schnapsenAction) {
         Schnapsen newBoard = new Schnapsen(this, false);
+        int doingPlayer = newBoard.getCurrentPlayer();
         schnapsenAction.doAction(newBoard.schnapsenBoard);
-        newBoard.actionRecords.add(new ActionRecord<SchnapsenAction>(newBoard.getCurrentPlayer(),schnapsenAction));
+        newBoard.actionRecords.add(new ActionRecord<SchnapsenAction>(doingPlayer,schnapsenAction));
         return newBoard;
     }
 
@@ -149,7 +151,6 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
     @Override
     public Game<SchnapsenAction, SchnapsenBoard> getGame(int i) {
         return new Schnapsen(this, true);
-        //return this;
     }
 
     @Override

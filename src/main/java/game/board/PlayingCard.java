@@ -6,8 +6,6 @@
 
 package game.board;
 
-import game.action.SchnapsenAction;
-
 import java.util.Objects;
 
 public class PlayingCard {
@@ -15,7 +13,6 @@ public class PlayingCard {
     private SchnapsenBoard.cardNames cardName;
     private int cardValue;
     private PlayingCard possibleMarriage;
-    //private String cardPicture;
     private boolean isTrumpSuit = false;
 
     public PlayingCard(SchnapsenBoard.cardSuits suit, SchnapsenBoard.cardNames cardName, int cardValue) {
