@@ -127,7 +127,7 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
                 if (possibleActions.isEmpty()) {
                     for(PlayingCard suitCard : suits) {
                         possibleActions.add(new SchnapsenAction(playerId, suitCard, "Play " + suitCard.getCardName()));
-                    };
+                    }
                 }
 
                 //3. Rule: trick taking rule if having trump card, if no card matched the suit we must play any trump card to take the trick

@@ -324,18 +324,18 @@ public class SchnapsenBoard {
 
 
     /**
-     * This consturctor is used to fill in "hidden" Information to a new deep copied Schnapsen Board, while keeping all the other boards information
+     * This constructor is used to fill in all "hidden" Information to a new deep copied Schnapsen Board, while keeping all the other boards information
      * @param otherBoard the board which information will be used by the new board
      * @param player0Cards the player 0 cards to be used by the new board
      * @param player1Cards the player 1 cards to be used by the new board
      * @param playingCardPile the playing card pile to be used by the new board
-     *//*
+     */
     public SchnapsenBoard(SchnapsenBoard otherBoard, List<PlayingCard> player0Cards, List<PlayingCard> player1Cards, LinkedList<PlayingCard> playingCardPile) {
         this(player0Cards, player1Cards, playingCardPile, otherBoard.player0Tricks, otherBoard.player1Tricks, otherBoard.startingPlayer, otherBoard.playerTurnId, otherBoard.random,
                 otherBoard.player0MarriageTempScore, otherBoard.player1MarriageTempScore, otherBoard.player0Bummerl, otherBoard.player1Bummerl, otherBoard.player0Score, otherBoard.player1Score,
                 otherBoard.talonClosingPlayerId, otherBoard.talonClosedEnemyScore, otherBoard.talonClosed, otherBoard.leadingCard, otherBoard.trumpCard, otherBoard.trumpSuit,
                 otherBoard. marriageCardDeclared, otherBoard.bummerlMax, otherBoard.player0BummerlAmount, otherBoard.player1BummerlAmount, otherBoard.player0Marriages, otherBoard.player1Marriages, otherBoard.oldTrumpCard);
-    }*/
+    }
 
     /**
      * Creates a deep copy of a Schnapsen board based on the inputs given, the new board also features new Cards
