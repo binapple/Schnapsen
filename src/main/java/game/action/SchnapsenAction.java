@@ -163,6 +163,12 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
      * @param actionMessage The action's message that is displayed by the engine
      */
     public SchnapsenAction(int playerId, Boolean talonOrExchange, String actionMessage) {
+        if (playerId != 0 && playerId != 1) {
+            throw new IllegalArgumentException("playerId must be 0 or 1");
+        }
+        if (talonOrExchange == null) {
+            throw new IllegalArgumentException("talonOrExchange cannot be null");
+        }
         this.playerId = playerId;
         this.talonOrExchange = talonOrExchange;
         this.actionMessage = actionMessage;
@@ -175,6 +181,12 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
      * @param actionMessage The action's message that is displayed by the engine
      */
     public SchnapsenAction(int playerId, PlayingCard playingCard, String actionMessage) {
+        if (playerId != 0 && playerId != 1) {
+            throw new IllegalArgumentException("playerId must be 0 or 1");
+        }
+        if (playingCard == null) {
+            throw new IllegalArgumentException("playingCard cannot be null");
+        }
         this.playerId = playerId;
         this.playCard = playingCard;
         this.actionMessage = actionMessage;
@@ -188,6 +200,12 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
      * @param actionMessage The action's message that is displayed by the engine
      */
     public SchnapsenAction(int playerId, PlayingCard marriage1, PlayingCard marriage2, String actionMessage) {
+        if (playerId != 0 && playerId != 1) {
+            throw new IllegalArgumentException("playerId must be 0 or 1");
+        }
+        if (marriage1 == null || marriage2 == null) {
+            throw new IllegalArgumentException("marriage cards cannot be null");
+        }
         this.playerId = playerId;
         this.marriage1 = marriage1;
         this.marriage2 = marriage2;
@@ -199,6 +217,9 @@ public class SchnapsenAction implements Comparable<SchnapsenAction> {
      * @param doBoard the board on which the action should take place
      */
     public void doAction(SchnapsenBoard doBoard) {
+        if (doBoard == null) {
+            throw new IllegalArgumentException("The provided board cannot be null");
+        }
 
         //This action is a "playCard" action
         if (playCard != null) {

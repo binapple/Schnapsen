@@ -8,14 +8,23 @@ package game.board;
 
 import java.util.Objects;
 
-public class PlayingCard {
-    private SchnapsenBoard.cardSuits suit;
-    private SchnapsenBoard.cardNames cardName;
-    private int cardValue;
+public class PlayingCard implements Comparable<PlayingCard> {
+    private final SchnapsenBoard.CardSuit suit;
+    private final SchnapsenBoard.CardName cardName;
+    private final int cardValue;
     private PlayingCard possibleMarriage;
     private boolean isTrumpSuit = false;
 
-    public PlayingCard(SchnapsenBoard.cardSuits suit, SchnapsenBoard.cardNames cardName, int cardValue) {
+    public PlayingCard(SchnapsenBoard.CardSuit suit, SchnapsenBoard.CardName cardName, int cardValue) {
+        if (suit == null) {
+            throw new IllegalArgumentException("Suit cannot be null");
+        }
+        if (cardName == null) {
+            throw new IllegalArgumentException("Card name cannot be null");
+        }
+        if (cardValue < 0) {
+            throw new IllegalArgumentException("Card value cannot be negative");
+        }
         this.suit = suit;
         this.cardName = cardName;
         this.cardValue = cardValue;
@@ -26,14 +35,14 @@ public class PlayingCard {
     }
 
     public void setIsTrumpSuit(boolean trumpSuit) {
-        isTrumpSuit = trumpSuit;
+        this.isTrumpSuit = trumpSuit;
     }
 
-    public SchnapsenBoard.cardSuits getSuit() {
+    public SchnapsenBoard.CardSuit getSuit() {
         return suit;
     }
 
-    public SchnapsenBoard.cardNames getCardName() {
+    public SchnapsenBoard.CardName getCardName() {
         return cardName;
     }
 
@@ -74,4 +83,29 @@ public class PlayingCard {
     public int hashCode() {
         return Objects.hash(suit, cardName, cardValue);
     }
+
+  @Override
+  public int compareTo(PlayingCard o) {
+      if(o!=null) {
+        //Order cards based on their value
+        if (o.getSuit() == suit) {
+         return Integer.compare(o.getCardValue(), cardValue);
+        } else {
+
+          //Sort Trump cards first
+          if(o.isTrumpSuit())
+            return 1;
+          }
+
+          if(this.isTrumpSuit) {
+            return -1;
+          }
+
+          //sort based on suit order
+          return suit.compareTo(o.getSuit());
+
+        }
+      //Fallback compare toString
+      return this.toString().compareTo(o.toString());
+  }
 }

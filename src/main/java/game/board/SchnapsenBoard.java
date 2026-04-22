@@ -13,14 +13,14 @@ import java.util.stream.Collectors;
 public class SchnapsenBoard {
 
     //These enums help in keeping the naming of suits and cards consistent
-    public enum cardSuits {
+    public enum CardSuit {
         SPADES,
         HEARTS,
         DIAMONDS,
         CLUBS
     }
 
-    public enum cardNames {
+    public enum CardName {
         JackOfSpades {
             @Override
             public String toString() {
@@ -198,7 +198,7 @@ public class SchnapsenBoard {
 
     //These variables help in tracking the trump card and the trump suit
     private PlayingCard trumpCard;
-    private cardSuits trumpSuit;
+    private CardSuit trumpSuit;
 
     //Keep track of the old trump card in case of an "exchange"
     private PlayingCard oldTrumpCard;
@@ -216,49 +216,49 @@ public class SchnapsenBoard {
      */
     private void createCards()
     {
-        playingCardPile.add(new PlayingCard(cardSuits.SPADES, cardNames.JackOfSpades, 2));
+        playingCardPile.add(new PlayingCard(CardSuit.SPADES, CardName.JackOfSpades, 2));
         //Adding possible marriages to the spades cards
-        PlayingCard queenSpades = new PlayingCard(cardSuits.SPADES, cardNames.QueenOfSpades, 3);
-        PlayingCard kingSpades = new PlayingCard(cardSuits.SPADES, cardNames.KingOfSpades, 4);
+        PlayingCard queenSpades = new PlayingCard(CardSuit.SPADES, CardName.QueenOfSpades, 3);
+        PlayingCard kingSpades = new PlayingCard(CardSuit.SPADES, CardName.KingOfSpades, 4);
         queenSpades.setPossibleMarriage(kingSpades);
         kingSpades.setPossibleMarriage(queenSpades);
         playingCardPile.add(queenSpades);
         playingCardPile.add(kingSpades);
-        playingCardPile.add(new PlayingCard(cardSuits.SPADES, cardNames.TenOfSpades, 10));
-        playingCardPile.add(new PlayingCard(cardSuits.SPADES, cardNames.AceOfSpades, 11));
+        playingCardPile.add(new PlayingCard(CardSuit.SPADES, CardName.TenOfSpades, 10));
+        playingCardPile.add(new PlayingCard(CardSuit.SPADES, CardName.AceOfSpades, 11));
 
-        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, cardNames.JackOfHearts, 2));
+        playingCardPile.add(new PlayingCard(CardSuit.HEARTS, CardName.JackOfHearts, 2));
         //Adding possible marriages to the hearts cards
-        PlayingCard queenHearts = new PlayingCard(cardSuits.HEARTS, cardNames.QueenOfHearts, 3);
-        PlayingCard kingHearts = new PlayingCard(cardSuits.HEARTS, cardNames.KingOfHearts, 4);
+        PlayingCard queenHearts = new PlayingCard(CardSuit.HEARTS, CardName.QueenOfHearts, 3);
+        PlayingCard kingHearts = new PlayingCard(CardSuit.HEARTS, CardName.KingOfHearts, 4);
         queenHearts.setPossibleMarriage(kingHearts);
         kingHearts.setPossibleMarriage(queenHearts);
         playingCardPile.add(queenHearts);
         playingCardPile.add(kingHearts);
-        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, cardNames.TenOfHearts, 10));
-        playingCardPile.add(new PlayingCard(cardSuits.HEARTS, cardNames.AceOfHearts, 11));
+        playingCardPile.add(new PlayingCard(CardSuit.HEARTS, CardName.TenOfHearts, 10));
+        playingCardPile.add(new PlayingCard(CardSuit.HEARTS, CardName.AceOfHearts, 11));
 
-        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, cardNames.JackOfDiamonds, 2));
+        playingCardPile.add(new PlayingCard(CardSuit.DIAMONDS, CardName.JackOfDiamonds, 2));
         //Adding possible marriages to the hearts cards
-        PlayingCard queenDiamonds = new PlayingCard(cardSuits.DIAMONDS, cardNames.QueenOfDiamonds, 3);
-        PlayingCard kingDiamonds = new PlayingCard(cardSuits.DIAMONDS, cardNames.KingOfDiamonds, 4);
+        PlayingCard queenDiamonds = new PlayingCard(CardSuit.DIAMONDS, CardName.QueenOfDiamonds, 3);
+        PlayingCard kingDiamonds = new PlayingCard(CardSuit.DIAMONDS, CardName.KingOfDiamonds, 4);
         queenDiamonds.setPossibleMarriage(kingDiamonds);
         kingDiamonds.setPossibleMarriage(queenDiamonds);
         playingCardPile.add(queenDiamonds);
         playingCardPile.add(kingDiamonds);
-        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, cardNames.TenOfDiamonds, 10));
-        playingCardPile.add(new PlayingCard(cardSuits.DIAMONDS, cardNames.AceOfDiamonds, 11));
+        playingCardPile.add(new PlayingCard(CardSuit.DIAMONDS, CardName.TenOfDiamonds, 10));
+        playingCardPile.add(new PlayingCard(CardSuit.DIAMONDS, CardName.AceOfDiamonds, 11));
 
-        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, cardNames.JackOfClubs, 2));
+        playingCardPile.add(new PlayingCard(CardSuit.CLUBS, CardName.JackOfClubs, 2));
         //Adding possible marriages to the hearts cards
-        PlayingCard queenClubs = new PlayingCard(cardSuits.CLUBS, cardNames.QueenOfClubs, 3);
-        PlayingCard kingClubs = new PlayingCard(cardSuits.CLUBS, cardNames.KingOfClubs, 4);
+        PlayingCard queenClubs = new PlayingCard(CardSuit.CLUBS, CardName.QueenOfClubs, 3);
+        PlayingCard kingClubs = new PlayingCard(CardSuit.CLUBS, CardName.KingOfClubs, 4);
         queenClubs.setPossibleMarriage(kingClubs);
         kingClubs.setPossibleMarriage(queenClubs);
         playingCardPile.add(queenClubs);
         playingCardPile.add(kingClubs);
-        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, cardNames.TenOfClubs, 10));
-        playingCardPile.add(new PlayingCard(cardSuits.CLUBS, cardNames.AceOfClubs, 11));
+        playingCardPile.add(new PlayingCard(CardSuit.CLUBS, CardName.TenOfClubs, 10));
+        playingCardPile.add(new PlayingCard(CardSuit.CLUBS, CardName.AceOfClubs, 11));
     }
 
     /**
@@ -289,6 +289,9 @@ public class SchnapsenBoard {
      * @param random object that manipulates the shuffling of the deck
      */
     public SchnapsenBoard(Random random) {
+        if (random == null) {
+            throw new IllegalArgumentException("Random object cannot be null");
+        }
         startingPlayer = 0;
         playerTurnId = startingPlayer;
         this.random = random;
@@ -302,6 +305,12 @@ public class SchnapsenBoard {
      * @param bummerlMax states how many Bummerl the game will last
      */
     public SchnapsenBoard(Random random, int bummerlMax) {
+        if (random == null) {
+            throw new IllegalArgumentException("Random object cannot be null");
+        }
+        if (bummerlMax < 1) {
+            throw new IllegalArgumentException("The max of Bummerl can not be lower than 1");
+        }
         this.startingPlayer = 0;
         this.playerTurnId = startingPlayer;
         this.random = random;
@@ -314,6 +323,7 @@ public class SchnapsenBoard {
      * @param schnapsenBoard the Schnapsen Board to be deeply copied into the new one
      */
     public SchnapsenBoard(SchnapsenBoard schnapsenBoard) {
+      if(schnapsenBoard == null) throw new IllegalArgumentException("board to be copied cannot be null");
         this(schnapsenBoard.player0Cards, schnapsenBoard.player1Cards, schnapsenBoard.playingCardPile, schnapsenBoard.player0Tricks,
                 schnapsenBoard.player1Tricks, schnapsenBoard.startingPlayer, schnapsenBoard.playerTurnId, schnapsenBoard.random, schnapsenBoard.player0MarriageTempScore,
                 schnapsenBoard.player1MarriageTempScore, schnapsenBoard.player0Bummerl, schnapsenBoard.player1Bummerl, schnapsenBoard.player0Score, schnapsenBoard.player1Score,
@@ -331,7 +341,12 @@ public class SchnapsenBoard {
      * @param playingCardPile the playing card pile to be used by the new board
      */
     public SchnapsenBoard(SchnapsenBoard otherBoard, List<PlayingCard> player0Cards, List<PlayingCard> player1Cards, LinkedList<PlayingCard> playingCardPile) {
-        this(player0Cards, player1Cards, playingCardPile, otherBoard.player0Tricks, otherBoard.player1Tricks, otherBoard.startingPlayer, otherBoard.playerTurnId, otherBoard.random,
+      if (otherBoard == null) throw new IllegalArgumentException("The passed board cannot be null");
+      if (player0Cards == null) throw new IllegalArgumentException("player0Cards cannot be null");
+      if (player1Cards == null) throw new IllegalArgumentException("player1Cards cannot be null");
+      if (playingCardPile == null) throw new IllegalArgumentException("playingCardPile cannot be null");
+
+      this(player0Cards, player1Cards, playingCardPile, otherBoard.player0Tricks, otherBoard.player1Tricks, otherBoard.startingPlayer, otherBoard.playerTurnId, otherBoard.random,
                 otherBoard.player0MarriageTempScore, otherBoard.player1MarriageTempScore, otherBoard.player0Bummerl, otherBoard.player1Bummerl, otherBoard.player0Score, otherBoard.player1Score,
                 otherBoard.talonClosingPlayerId, otherBoard.talonClosedEnemyScore, otherBoard.talonClosed, otherBoard.leadingCard, otherBoard.trumpCard, otherBoard.trumpSuit,
                 otherBoard. marriageCardDeclared, otherBoard.bummerlMax, otherBoard.player0BummerlAmount, otherBoard.player1BummerlAmount, otherBoard.player0Marriages, otherBoard.player1Marriages, otherBoard.oldTrumpCard);
@@ -359,7 +374,7 @@ public class SchnapsenBoard {
                           boolean talonClosed,
                           PlayingCard leadingCard,
                           PlayingCard trumpCard,
-                          cardSuits trumpSuit,
+                          CardSuit trumpSuit,
                           PlayingCard marriageCardDeclared,
                           int bummerlMax,
                           int player0BummerlAmount,
@@ -476,8 +491,11 @@ public class SchnapsenBoard {
      * @return PlayingCard matching the search card from the pile
      */
     private PlayingCard findCardInPile(List<PlayingCard> pile, PlayingCard targetCard){
-        if(targetCard.getCardName() == cardNames.PlaceHolder) {
-            return new PlayingCard(cardSuits.SPADES,cardNames.PlaceHolder,0);
+        if (pile == null || targetCard == null) {
+            return null;
+        }
+        if(targetCard.getCardName() == CardName.PlaceHolder) {
+            return new PlayingCard(CardSuit.SPADES,CardName.PlaceHolder,0);
         }
         return pile.stream().filter(p -> p.equals(targetCard)).findFirst().orElse(null);
     }
@@ -517,6 +535,9 @@ public class SchnapsenBoard {
      * @param numberOfCards number of cards that are passed out
      */
     private void passCards(int playerId, int numberOfCards) {
+        if (playerId != 0 && playerId != 1) {
+            throw new IllegalArgumentException("playerId must be 0 or 1");
+        }
         if (!talonClosed && !playingCardPile.isEmpty()) {
             for (int i = 0; i < numberOfCards; i++) {
 
@@ -544,6 +565,12 @@ public class SchnapsenBoard {
      * @param card the card the player wants to play
      */
     public void playCard(int playerId, PlayingCard card) {
+        if (playerId != 0 && playerId != 1) {
+            throw new IllegalArgumentException("playerId must be 0 or 1");
+        }
+        if (card == null) {
+            throw new IllegalArgumentException("card cannot be null");
+        }
        if (playerTurnId == playerId) {
             List<PlayingCard> playerCards;
             if (playerId == 0) {
@@ -572,7 +599,7 @@ public class SchnapsenBoard {
                     }
                 } else {
                     //the non-leading player may have restrictions on which cards to play based on the status of the talon/drawing pile
-                    cardSuits leadingSuit = leadingCard.getSuit();
+                    CardSuit leadingSuit = leadingCard.getSuit();
                     int trickWinnerId = -1;
                     if (talonClosed || playingCardPile.isEmpty()) {
                         //the player has to follow the leading cards suit if possible
@@ -679,6 +706,9 @@ public class SchnapsenBoard {
      * @param playerId id of the player to make the exchange
      */
     public void exchangeTrumpCard(int playerId) {
+        if (playerId != 0 && playerId != 1) {
+            throw new IllegalArgumentException("playerId must be 0 or 1");
+        }
 
         if(!talonClosed) {
             //We check if the player is allowed to make a change (only when they are leading, so the leadingCard must be null)
@@ -691,11 +721,11 @@ public class SchnapsenBoard {
                 }
 
                 //This logic checks if the player has the correct Jack in their hand
-                cardNames jackName = switch (trumpSuit) {
-                    case SPADES -> cardNames.JackOfSpades;
-                    case HEARTS -> cardNames.JackOfHearts;
-                    case DIAMONDS -> cardNames.JackOfDiamonds;
-                    case CLUBS -> cardNames.JackOfClubs;
+                CardName jackName = switch (trumpSuit) {
+                    case SPADES -> CardName.JackOfSpades;
+                    case HEARTS -> CardName.JackOfHearts;
+                    case DIAMONDS -> CardName.JackOfDiamonds;
+                    case CLUBS -> CardName.JackOfClubs;
                 };
 
                 PlayingCard cardSwitch = null;
@@ -735,6 +765,12 @@ public class SchnapsenBoard {
      * @param marriageCard2 second card of the marriage
      */
     public void declareMarriage(int playerId, PlayingCard marriageCard1, PlayingCard marriageCard2) {
+        if (playerId != 0 && playerId != 1) {
+            throw new IllegalArgumentException("playerId must be 0 or 1");
+        }
+        if (marriageCard1 == null || marriageCard2 == null) {
+            throw new IllegalArgumentException("marriageCard cannot be null");
+        }
         if (playerTurnId == playerId && leadingCard == null) {
             List<PlayingCard> playerCards;
             if (playerId == 0) {
@@ -809,6 +845,9 @@ public class SchnapsenBoard {
      * @param playerId id of player to close the talon
      */
     public void closeTalon(int playerId) {
+        if (playerId != 0 && playerId != 1) {
+            throw new IllegalArgumentException("playerId must be 0 or 1");
+        }
         //We got to keep track of the current score of the non-closing player for the end of round Bummerl calculation
         if(playerTurnId == playerId && leadingCard == null) {
             talonClosed = true;
@@ -1069,11 +1108,16 @@ public class SchnapsenBoard {
 
         String bummerlPlayer1 = "°".repeat(Math.max(0, player1BummerlAmount));
 
+        Set<PlayingCard> player0Set = new TreeSet<>();
+        player0Set.addAll(player0Cards);
+        Set<PlayingCard> player1Set = new TreeSet<>();
+        player1Set.addAll(player1Cards);
+
         String sb =
                 "-------------------\n" +
                 ".... SCHNAPSEN ´´´´\n" +
                 "-------------------\n" +
-                "Player 0's Hand: " + player0Cards + " Player 0's Score: " + player0Score + " Player 0's Tricks: " + player0Tricks.stream()
+                "Player 0's Hand: " + player0Set + " Player 0's Score: " + player0Score + " Player 0's Tricks: " + player0Tricks.stream()
                         .map(Arrays::toString) // Converts each PlayingCard[] to a readable String
                         .collect(Collectors.joining(", ", "[", "]")) + "\n" +
                 "--------------------\n" +
@@ -1082,7 +1126,7 @@ public class SchnapsenBoard {
                 leadCard +
                 //"Drawing Pile: " + playingCardPile + "\n" + //-> for testing
                 //"--------------------\n" +
-                "Player 1's Hand: " + player1Cards + " Player 1's Score: " + player1Score + " Player 1's Tricks: " + player1Tricks.stream()
+                "Player 1's Hand: " + player1Set + " Player 1's Score: " + player1Score + " Player 1's Tricks: " + player1Tricks.stream()
                 .map(Arrays::toString) // Converts each PlayingCard[] to a readable String
                 .collect(Collectors.joining(", ", "[", "]")) + "\n" +
                 "--------------------\n" +
@@ -1129,6 +1173,9 @@ public class SchnapsenBoard {
      * @return a double value of the players overall utility score
      */
     public double getUtilityValue(int playerId) {
+        if (playerId != 0 && playerId != 1) {
+            throw new IllegalArgumentException("playerId must be 0 or 1");
+        }
         if(playerId == 0)
         {
             double bummerlScore0 = player1BummerlAmount * 10;
@@ -1154,17 +1201,20 @@ public class SchnapsenBoard {
      * The removed cards are replaced by a placeholder card
      */
     public void hideInformation(int playerId) {
+        if (playerId != 0 && playerId != 1) {
+            throw new IllegalArgumentException("playerId must be 0 or 1");
+        }
         if (playerId == 0) {
             int player1CardNum = player1Cards.size();
             player1Cards.clear();
             for (int i = 0; i < player1CardNum; i++) {
-                player1Cards.add(new PlayingCard(cardSuits.SPADES, cardNames.PlaceHolder, 0));
+                player1Cards.add(new PlayingCard(CardSuit.SPADES, CardName.PlaceHolder, 0));
             }
         } else {
             int player0CardNum = player0Cards.size();
             player0Cards.clear();
             for (int i = 0; i < player0CardNum; i++) {
-                player0Cards.add(new PlayingCard(cardSuits.SPADES, cardNames.PlaceHolder, 0));
+                player0Cards.add(new PlayingCard(CardSuit.SPADES, CardName.PlaceHolder, 0));
             }
         }
 
@@ -1173,7 +1223,7 @@ public class SchnapsenBoard {
         if(playingCardNum != 0) {
             playingCardPile.clear();
             for (int i = 0; i < playingCardNum - 1; i++) {
-                playingCardPile.add(new PlayingCard(cardSuits.SPADES, cardNames.PlaceHolder, 0));
+                playingCardPile.add(new PlayingCard(CardSuit.SPADES, CardName.PlaceHolder, 0));
             }
             playingCardPile.addLast(trumpCard);
         }
@@ -1185,9 +1235,9 @@ public class SchnapsenBoard {
      */
     public List<PlayingCard> getPlayer1Cards() {
         if(this.getPlayerTurnId()== 1)
-            return player1Cards;
+            return Collections.unmodifiableList(player1Cards);
         else
-            return new ArrayList<>();
+            return Collections.emptyList();
     }
 
     /**
@@ -1196,9 +1246,9 @@ public class SchnapsenBoard {
      */
     public List<PlayingCard> getPlayer0Cards() {
         if(this.getPlayerTurnId()== 0)
-            return player0Cards;
+            return Collections.unmodifiableList(player0Cards);
         else
-            return new ArrayList<>();
+            return Collections.emptyList();
     }
 
     /**

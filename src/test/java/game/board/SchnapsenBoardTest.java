@@ -6,6 +6,7 @@
 
 package game.board;
 
+import game.Schnapsen;
 import game.action.SchnapsenAction;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SchnapsenBoardTest {
+
 
 
     @Test
@@ -175,5 +177,58 @@ class SchnapsenBoardTest {
         board.hideInformation(board.getPlayerTurnId());
         System.out.println(board.toString());
     }
+
+  @Test
+  void testPlayingCardValidation() {
+    assertThrows(IllegalArgumentException.class, () -> new PlayingCard(null, SchnapsenBoard.CardName.AceOfSpades, 11));
+    assertThrows(IllegalArgumentException.class, () -> new PlayingCard(SchnapsenBoard.CardSuit.SPADES, null, 11));
+    assertThrows(IllegalArgumentException.class, () -> new PlayingCard(SchnapsenBoard.CardSuit.SPADES, SchnapsenBoard.CardName.AceOfSpades, -1));
+  }
+
+  @Test
+  void testSchnapsenBoardValidation() {
+    assertThrows(IllegalArgumentException.class, () -> new SchnapsenBoard((java.util.Random) null));
+    assertThrows(IllegalArgumentException.class, () -> new SchnapsenBoard((SchnapsenBoard) null));
+    assertThrows(IllegalArgumentException.class, () -> new SchnapsenBoard(null, 1));
+    assertThrows(IllegalArgumentException.class, () -> new SchnapsenBoard(new Random(), 0));
+    assertThrows(IllegalArgumentException.class, () -> new SchnapsenBoard(new Random(), -5));
+
+    SchnapsenBoard board = new SchnapsenBoard();
+    assertThrows(IllegalArgumentException.class, () -> board.playCard(2, board.getPlayer0Cards().get(0)));
+    assertThrows(IllegalArgumentException.class, () -> board.playCard(-1, board.getPlayer0Cards().get(0)));
+    assertThrows(IllegalArgumentException.class, () -> board.playCard(0, null));
+  }
+
+  @Test
+  void testUnmodifiableLists() {
+    SchnapsenBoard board = new SchnapsenBoard();
+    List<PlayingCard> p0Cards = board.getPlayer0Cards();
+    assertThrows(UnsupportedOperationException.class, () -> p0Cards.clear());
+  }
+
+  @Test
+  void testDeepCopyIndependence() {
+    SchnapsenBoard original = new SchnapsenBoard(new Random(42));
+    SchnapsenBoard copy = new SchnapsenBoard(original);
+
+    PlayingCard card = original.getPlayer0Cards().get(0);
+    original.playCard(0, card);
+
+    assertNotEquals(original.getPlayerTurnId(), copy.getPlayerTurnId());
+    assertNotNull(original.getLeadingCard());
+    assertNull(copy.getLeadingCard());
+  }
+
+  @Test
+  void testSchnapsenParsingRobustness() {
+    // Test malformed string fallback
+    Schnapsen schnapsen = new Schnapsen("not-a-number;also-not-a-number", 2);
+    assertNotNull(schnapsen.getBoard());
+
+    // Test valid parsing
+    Schnapsen valid = new Schnapsen("5;12345", 2);
+    assertEquals(5, valid.getBoard().getBummerlMax());
+  }
+
 
 }

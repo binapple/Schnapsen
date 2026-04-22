@@ -44,26 +44,24 @@ public class Schnapsen implements Game<SchnapsenAction, SchnapsenBoard> {
      */
     public Schnapsen(String stringBoard, int numberOfPlayers)
     {
-        if(stringBoard != null) {
-            if(!stringBoard.isEmpty()) {
+        this.actionRecords = new ArrayList<>();
+        if(stringBoard != null && !stringBoard.isEmpty()) {
+            try {
                 String[] params = stringBoard.split(";");
-
                 int bummerlCount = Integer.parseInt(params[0]);
                 if (params.length > 1) {
-                    int seed = Integer.parseInt(params[1]);
+                    long seed = Long.parseLong(params[1]);
                     this.schnapsenBoard = new SchnapsenBoard(new Random(seed), bummerlCount);
                 } else {
                     this.schnapsenBoard = new SchnapsenBoard(new Random(), bummerlCount);
                 }
-                this.actionRecords = new ArrayList<>();
-            } else {
+            } catch (NumberFormatException e) {
+                // Fallback to default if parsing fails
                 this.schnapsenBoard = new SchnapsenBoard();
-                this.actionRecords = new ArrayList<>();
             }
         }
         else {
             this.schnapsenBoard = new SchnapsenBoard();
-            this.actionRecords = new ArrayList<>();
         }
     }
 
