@@ -1108,16 +1108,25 @@ public class SchnapsenBoard {
 
         String bummerlPlayer1 = "°".repeat(Math.max(0, player1BummerlAmount));
 
-        Set<PlayingCard> player0Set = new TreeSet<>();
-        player0Set.addAll(player0Cards);
-        Set<PlayingCard> player1Set = new TreeSet<>();
-        player1Set.addAll(player1Cards);
+
+        String player0CardsString = "";
+        String player1CardsString = "";
+
+        if(playerTurnId == 0) {
+          Set<PlayingCard> player0Set = new TreeSet<>(player0Cards);
+          player0CardsString = player0Set.toString();
+          player1CardsString = player1Cards.toString();
+        } else {
+          Set<PlayingCard> player1Set = new TreeSet<>(player1Cards);
+          player1CardsString = player1Set.toString();
+          player0CardsString = player0Cards.toString();
+        }
 
         String sb =
                 "-------------------\n" +
                 ".... SCHNAPSEN ´´´´\n" +
                 "-------------------\n" +
-                "Player 0's Hand: " + player0Set + " Player 0's Score: " + player0Score + " Player 0's Tricks: " + player0Tricks.stream()
+                "Player 0's Hand: " + player0CardsString + " Player 0's Score: " + player0Score + " Player 0's Tricks: " + player0Tricks.stream()
                         .map(Arrays::toString) // Converts each PlayingCard[] to a readable String
                         .collect(Collectors.joining(", ", "[", "]")) + "\n" +
                 "--------------------\n" +
@@ -1126,7 +1135,7 @@ public class SchnapsenBoard {
                 leadCard +
                 //"Drawing Pile: " + playingCardPile + "\n" + //-> for testing
                 //"--------------------\n" +
-                "Player 1's Hand: " + player1Set + " Player 1's Score: " + player1Score + " Player 1's Tricks: " + player1Tricks.stream()
+                "Player 1's Hand: " + player1CardsString + " Player 1's Score: " + player1Score + " Player 1's Tricks: " + player1Tricks.stream()
                 .map(Arrays::toString) // Converts each PlayingCard[] to a readable String
                 .collect(Collectors.joining(", ", "[", "]")) + "\n" +
                 "--------------------\n" +
