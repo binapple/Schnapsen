@@ -1,4 +1,4 @@
-# Schnapsen -v0
+# Schnapsen - v1.0
 
 **Author:** Bina Philipp C.  
 **License:** GNU GPL v3.0  
@@ -7,12 +7,15 @@
 ## Build Process
 This project uses **Gradle (Kotlin DSL)**.
 1. Clone the repository.
-2. Open the project e.g. in **IntelliJ IDEA** (Configuration files included in `.idea/`).
+2. Open the project e.g. in **IntelliJ IDEA** 
 3. Run `./gradlew build` to compile.
 
 ## 3rd-Party Software
 The following libraries are used and included in the `/3rd-party-software` directory:
 - **[sge-1.0.4-dq-exe.jar]**: Used as a game engine.
+
+## Documentation
+Please refer to the documentation in the `/doc` folder
 
 [//]: # (## Static Code Analysis)
 
@@ -20,5 +23,6 @@ The following libraries are used and included in the `/3rd-party-software` direc
 
 [//]: # (`./gradlew pmdMain`)
 
-## Known Bugs / Workarounds
-- No known bugs at this time.
+[//]: # (## Known Bugs / Workarounds)
+
+[//]: # (- No known bugs at this time.)
